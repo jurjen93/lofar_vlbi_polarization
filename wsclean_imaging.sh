@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# Input MS
 MS=$1
 
+# Run wsclean
 wsclean \
 -no-update-model-required \
 -minuv-l 1500.0 \
