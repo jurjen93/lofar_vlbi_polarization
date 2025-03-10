@@ -5,5 +5,5 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Run Python script with paths relative to this script's location
 python "$SCRIPT_DIR/scripts/do_RMsynt.py" \
-    --input_directory "$SCRIPT_DIR" \
-    --output_directory "$SCRIPT_DIR"
+    --input_directory "./" \
+    --output_directory "./"
