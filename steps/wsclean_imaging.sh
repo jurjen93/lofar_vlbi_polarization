@@ -1,0 +1,27 @@
+#!/bin/bash
+
+MS=$1
+
+wsclean \
+-no-update-model-required \
+-minuv-l 1500.0 \
+-size 1600 1600 \
+-reorder \
+-weight briggs -1.5 \
+-parallel-reordering 4 \
+-mgain 0.8 \
+-data-column DATA \
+-channels-out 128 \
+-auto-mask 2.5 \
+-auto-threshold 0.5 \
+-pol qu \
+-baseline-averaging 6.135923151542564 \
+-gridder wgridder \
+-wgridder-accuracy 0.0001 \
+-use-differential-lofar-beam \
+-facet-beam-update 120 \
+-name pol_imaging \
+-scale 0.075arcsec \
+-nmiter 12 \
+-niter 15000 \
+${MS}
