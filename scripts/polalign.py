@@ -157,7 +157,6 @@ def find_RMandoffets(i_fits, u_fits, q_fits, regionfile, h5_in=None, ref_RM=6.30
 
     freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U = getallfluxes(i_fits, q_fits, u_fits, regionfile)
 
-    polangle = 0.5 * np.arctan2(Uflux, Qflux)
     lambdaref2 = 4.5  # (np.mean(wav**2))
     x0_QU = np.array([0.2, 6.0, 0.9])  # initial guess QU fitting
     x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
@@ -303,6 +302,7 @@ def find_RMandoffets(i_fits, u_fits, q_fits, regionfile, h5_in=None, ref_RM=6.30
     plt.subplot(2, 1, 1)
     polangle_sigma = 0.5 * np.sqrt((((sigma_U ** 2) * (Qflux ** 2)) + ((sigma_Q ** 2) * (Uflux ** 2))) / (
                 (Uflux ** 2 + Qflux ** 2) ** 2))  # https://astro.subhashbose.com/tools/error-propagation-calculator
+    polangle = 0.5 * np.arctan2(Uflux, Qflux)
     plt.errorbar(wav ** 2, polangle, yerr=polangle_sigma, linestyle="", marker="o", color='black',
                  label='polarization angle')
     print(fitQU_depol[0], fitQU_depol[1], fitQU_depol[2], fitQU_depol[3])
@@ -368,9 +368,10 @@ def parse_args():
     """Argument parser"""
 
     parser = ArgumentParser(description='Perform polarisation alignment for deep observations')
-    parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, required=True)
+    parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region_file', help='DS9 region file', type=str, required=True)
+    parser.add_argument('--input_h5', help='Input h5parm file', type=str)
     parser.add_argument('--ref_RM', help='Reference RM', type=float, default=6.30423201)
     parser.add_argument('--ref_offset', help='Reference offset', type=float, default=0.8701224377970226)
     return parser.parse_args()
@@ -384,7 +385,7 @@ def main():
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
-    find_RMandoffets(i_fits, u_fits, q_fits, args.region_file, args.ref_RM, args.ref_offset)
+    find_RMandoffets(i_fits, u_fits, q_fits, args.region_file, args.h5_in, args.ref_RM, args.ref_offset)
 
 
 if __name__ == "__main__":

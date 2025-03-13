@@ -1,6 +1,7 @@
 from astropy.io import fits
 import numpy as np
 from .image_handling import findrms
+from astropy.wcs import WCS
 
 
 def get_header(fits_file):
