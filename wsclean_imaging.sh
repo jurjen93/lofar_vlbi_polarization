@@ -16,7 +16,7 @@ wsclean \
 -channels-out 128 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
--pol qu \
+-pol iqu \
 -baseline-averaging 6.135923151542564 \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
