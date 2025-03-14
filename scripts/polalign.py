@@ -16,7 +16,7 @@ from pol_phase_rot import PhaseRotate
 matplotlib.use('QtAgg')
 
 
-def get_nbeams_region(filename, ds9region):
+def get_nbeams_region(filename: str = None, ds9region: str = None):
     """
     Get number of beams in region file
     Args:
@@ -41,7 +41,7 @@ def get_nbeams_region(filename, ds9region):
         return n_beam
 
 
-def getflux(filename, ds9region):
+def getflux(filename: str = None, ds9region: str = None):
     """
     Gef flux from fits file
     Args:
@@ -71,7 +71,7 @@ def getflux(filename, ds9region):
         return np.sum(hdu[0].data) / conversion_factor
 
 
-def getallfluxes(Ifiles, Qfiles, Ufiles, ds9region):
+def getallfluxes(Ifiles: list = None, Qfiles: list = None, Ufiles: list = None, ds9region: str = None):
     """
     Gef fluxes from Stokes files
     Args:
@@ -119,7 +119,7 @@ def getallfluxes(Ifiles, Qfiles, Ufiles, ds9region):
     return freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U
 
 
-def phase_rot(h5_in, h5_out, intercept, rm):
+def phase_rot(h5_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
     """
     Make template h5 with default values (phase=0 and amplitude=1) and convert to phase rotate matrix
     for polarization alignment between different observations.
@@ -136,7 +136,7 @@ def phase_rot(h5_in, h5_out, intercept, rm):
     phaserot.h5.close()
 
 
-def find_RMandoffets(i_fits, u_fits, q_fits, regionfile, h5_in=None, ref_RM=6.30423201, ref_offset=0.8701224377970226):
+def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = None, regionfile: str = None):
     """
     Find Rotation Measure offsets for combining multiple observations for deep imaging
 
@@ -148,6 +148,8 @@ def find_RMandoffets(i_fits, u_fits, q_fits, regionfile, h5_in=None, ref_RM=6.30
         h5_in: h5parm input
         ref_RM: reference RM
         ref_offset: reference offset
+
+    Return: RM, offset, lambda ref, L-number
     """
 
     if len(i_fits)==0 and len(u_fits)==0 and len(q_fits)==0:
@@ -343,10 +345,23 @@ def find_RMandoffets(i_fits, u_fits, q_fits, regionfile, h5_in=None, ref_RM=6.30
 
     plt.close()
 
-    delta_RM = fitQU_depol[1] - ref_RM
-    delta_offset = fitQU_depol[2] - ref_offset
-    print(fitQU_depol[1] - ref_RM)
-    print(fitQU_depol[2] - ref_offset)
+    # RM , offset, lambda ref, L-number
+    print(f"RM: {fitQU_depol[1]}")
+    print(f"offset: {fitQU_depol[2]}")
+    print(f"\lambda_ref: {fitQU_depol[2]}")
+
+    return fitQU_depol[1], fitQU_depol[2], lambdaref2, L
+
+
+def get_phase_rot(RM, offset, h5_in=None, ref_RM=6.30423201, ref_offset=0.8701224377970226, lambdaref2=None, L=None):
+    """
+    Get phase rotation h5parm
+    """
+
+    delta_RM = RM - ref_RM
+    delta_offset = offset - ref_offset
+    print(RM - ref_RM)
+    print(offset - ref_offset)
 
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -372,8 +387,8 @@ def parse_args():
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region_file', help='DS9 region file', type=str, required=True)
     parser.add_argument('--input_h5', help='Input h5parm file', type=str)
-    parser.add_argument('--ref_RM', help='Reference RM', type=float, default=6.30423201)
-    parser.add_argument('--ref_offset', help='Reference offset', type=float, default=0.8701224377970226)
+    parser.add_argument('--ref_RM', help='Reference RM', type=float, default=None)
+    parser.add_argument('--ref_offset', help='Reference offset', type=float, default=None)
     return parser.parse_args()
 
 
@@ -385,7 +400,10 @@ def main():
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
-    find_RMandoffets(i_fits, u_fits, q_fits, args.region_file, args.input_h5, args.ref_RM, args.ref_offset)
+    RM, offset, lambdaref2, L = find_RMandoffets(i_fits, u_fits, q_fits, args.region_file)
+
+    if args.ref_RM is not None and args.ref_offset is not None and args.input_h5 is not None:
+        get_phase_rot(RM, offset, args.input_h5, args.ref_RM, args.ref_offset, lambdaref2, L)
 
 
 if __name__ == "__main__":
