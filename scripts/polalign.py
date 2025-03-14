@@ -385,7 +385,7 @@ def main():
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
-    find_RMandoffets(i_fits, u_fits, q_fits, args.region_file, args.h5_in, args.ref_RM, args.ref_offset)
+    find_RMandoffets(i_fits, u_fits, q_fits, args.region_file, args.input_h5, args.ref_RM, args.ref_offset)
 
 
 if __name__ == "__main__":
