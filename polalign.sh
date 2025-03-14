@@ -13,4 +13,3 @@ python $SCRIPT_DIR/scripts/polalign.py \
   --output_directory "./" \
   --input_h5 ${H5_IN} \
   --region_file ${REGION}
-
