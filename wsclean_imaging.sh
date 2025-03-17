@@ -13,7 +13,7 @@ wsclean \
 -parallel-reordering 4 \
 -mgain 0.8 \
 -data-column DATA \
--channels-out 128 \
+-channels-out 96 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
 -pol iqu \

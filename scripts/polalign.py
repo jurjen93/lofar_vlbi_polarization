@@ -152,17 +152,17 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     Return: RM, offset, lambda ref, L-number
     """
 
+    lambdaref2 = 4.5  # (np.mean(wav**2))
+    x0_QU = np.array([0.2, 6.0, 0.9])  # initial guess QU fitting
+    x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
+    x0_I = np.array([0.24, -1.1])  # initial guess Stokes I function_synch_simple
+
     if len(i_fits)==0 and len(u_fits)==0 and len(q_fits)==0:
         sys.exit("ERROR: No images selected/found")
 
     L = extract_l_number(i_fits[0])
 
     freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U = getallfluxes(i_fits, q_fits, u_fits, regionfile)
-
-    lambdaref2 = 4.5  # (np.mean(wav**2))
-    x0_QU = np.array([0.2, 6.0, 0.9])  # initial guess QU fitting
-    x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
-    x0_I = np.array([0.24, -1.1])  # initial guess Stokes I function_synch_simple
 
     fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
     fitI_err = np.sqrt(np.diag(pcov_I))
@@ -348,7 +348,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     # RM , offset, lambda ref, L-number
     print(f"RM: {fitQU_depol[1]}")
     print(f"offset: {fitQU_depol[2]}")
-    print(f"\lambda_ref: {fitQU_depol[2]}")
+    print(f"\lambda_ref: {lambdaref2}")
 
     return fitQU_depol[1], fitQU_depol[2], lambdaref2, L
 
