@@ -207,6 +207,17 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     sigma_Q = sigma_Q[final_mask]
     sigma_U = sigma_U[final_mask]
 
+    # Sort based on freqvec
+    sort_idx = np.argsort(freqvec)
+
+    freqvec = freqvec[sort_idx]
+    Iflux = Iflux[sort_idx]
+    Qflux = Qflux[sort_idx]
+    Uflux = Uflux[sort_idx]
+    sigma_I = sigma_I[sort_idx]
+    sigma_Q = sigma_Q[sort_idx]
+    sigma_U = sigma_U[sort_idx]
+
     # fit I again but now with cleaned data
     fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
     # fitI, pcov_I = scipy.optimize.curve_fit(function_synch, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
