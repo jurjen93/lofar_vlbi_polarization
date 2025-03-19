@@ -2,7 +2,7 @@
 
 #INPUT
 REGION=$1
-H5_in=$2
+H5_IN=$2
 REF_RM=$3
 REF_OFFSET=$4
 
