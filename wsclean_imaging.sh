@@ -17,7 +17,6 @@ wsclean \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
 -pol iqu \
--baseline-averaging 6.135923151542564 \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
 -use-differential-lofar-beam \
