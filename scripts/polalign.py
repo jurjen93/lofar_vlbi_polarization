@@ -186,17 +186,26 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     sigma_Q = sigma_Q[idx_incl]
     sigma_U = sigma_U[idx_incl]
 
-    idx = np.where(make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux > 0.06)  # filter out pol fraction
-    idx_incl = np.where(
-        make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux <= 0.06)  # filter out pol fraction larger than 5%
-    # keep only good values, remove flagged ones based on bad chisq Stokes I fit
-    freqvec = freqvec[idx_incl]
-    Iflux = Iflux[idx_incl]
-    Qflux = Qflux[idx_incl]
-    Uflux = Uflux[idx_incl]
-    sigma_I = sigma_I[idx_incl]
-    sigma_Q = sigma_Q[idx_incl]
-    sigma_U = sigma_U[idx_incl]
+    # Compute polarization fraction
+    pol_frac = make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux
+
+    # Indices where polarization fraction <= 0.06
+    idx_incl = np.where(pol_frac <= 0.06)[0]
+
+    # Create a mask for NaN values in Iflux, Qflux, or Uflux
+    nan_mask = ~(np.isnan(Iflux) | np.isnan(Qflux) | np.isnan(Uflux))
+
+    # Combine both conditions
+    final_mask = np.intersect1d(idx_incl, np.where(nan_mask)[0])
+
+    # Apply filtering
+    freqvec = freqvec[final_mask]
+    Iflux = Iflux[final_mask]
+    Qflux = Qflux[final_mask]
+    Uflux = Uflux[final_mask]
+    sigma_I = sigma_I[final_mask]
+    sigma_Q = sigma_Q[final_mask]
+    sigma_U = sigma_U[final_mask]
 
     # fit I again but now with cleaned data
     fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
