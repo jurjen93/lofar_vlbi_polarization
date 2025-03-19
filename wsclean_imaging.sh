@@ -25,7 +25,6 @@ wsclean \
 -scale 0.075arcsec \
 -join-polarizations \
 -join-channels \
--fit-spectral-pol 5 \
 -nmiter 12 \
 -niter 15000 \
 ${MS}
