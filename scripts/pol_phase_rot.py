@@ -23,7 +23,7 @@ class PhaseRotate:
     polarization alignment between different observations.
     """
 
-    def __init__(self, h5_in=None, ms_in=None, h5_out=None, freqs=None):
+    def __init__(self, h5_in=None, ms_in=None, h5_out=None):
         if h5_in is not None:
             copy(h5_in, h5_out)
         else:
@@ -35,16 +35,15 @@ class PhaseRotate:
         self.h5 = tables.open_file(h5_out, 'r+')
         self.axes = ['time', 'freq', 'ant', 'dir', 'pol']
 
-        if freqs is not None:
-            self.freqs = freqs
-        elif h5_in is not None:
+
+        if h5_in is not None:
             self.freqs = self.h5.root.sol000.phase000.freq[:]
             self.time = np.array([self.h5.root.sol000.phase000.time[:][0]])
             self.ant = self.h5.root.sol000.phase000.ant[:]
 
         elif ms_in is not None:
             with table(ms_in+"::SPECTRAL_WINDOW", ack=False) as ms:
-                self.freq = ms.getcol("CHAN_FREQ")[0]
+                self.freqs = ms.getcol("CHAN_FREQ")[0]
             with table(ms_in, ack=False) as ms:
                 self.time = np.unique(ms.getcol("TIME"))[0]
             with table(ms_in+"::ANTENNA", ack=False) as ms:
