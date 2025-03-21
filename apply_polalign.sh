@@ -60,6 +60,6 @@ python "$SCRIPT_DIR/scripts/polalign.py" \
   --input_directory $INPUT_DIR \
   --output_directory $OUTPUT_DIR \
   --region_file $REGION \
-  --input_ms $MS_IN \
-  --RM_offset_CSV $RM_CSV \
+  --msin $MS_IN \
+  --RM_offset_csv $RM_CSV \
   --applycal
