@@ -423,9 +423,9 @@ def parse_args():
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region_file', help='DS9 region file', type=str, required=True)
     parser.add_argument('--msin', help='Input h5parm file', type=str)
-    parser.add_argument('--ref_RM', help='Reference RM', type=float, default=None)
-    parser.add_argument('--ref_offset', help='Reference offset', type=float, default=None)
-    parser.add_argument('--RM_offset_CSV', help='Input CSV with RM and offset from reference observation (instead of --ref_offset or --ref_RM)')
+    parser.add_argument('--ref_RM', help='Reference RM', type=float)
+    parser.add_argument('--ref_offset', help='Reference offset', type=float)
+    parser.add_argument('--RM_offset_csv', help='Input CSV with RM and offset from reference observation (instead of --ref_offset or --ref_RM)')
     parser.add_argument('--applycal', action='store_true', help='Apply corrections to MS')
 
     return parser.parse_args()
@@ -453,7 +453,7 @@ def main():
     if ((args.ref_RM is not None and args.ref_offset is not None) or args.RM_offset_csv is not None
             and args.msin is not None):
         if args.RM_offset_csv is not None:
-            df = pd.read_csv(args.RM_offset_CSV)
+            df = pd.read_csv(args.RM_offset_csv)
             ref_RM = df['RM'][0]
             ref_offset = df['Offset'][0]
         else:
