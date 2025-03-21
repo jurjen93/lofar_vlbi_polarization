@@ -18,8 +18,6 @@ from utils.RM_functions import functionRM, functionRMdepol, function_synch_simpl
 from utils.parsing import extract_l_number
 from pol_phase_rot import PhaseRotate
 
-import warnings
-warnings.filterwarnings("ignore", category=SyntaxWarning)
 matplotlib.use('QtAgg')
 
 
