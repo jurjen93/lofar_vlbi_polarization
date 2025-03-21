@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initialize variables for required arguments
+# Input arguments
 REGION=""
 declare -a MS_IN=()
 RM_CSV=""
@@ -54,16 +54,17 @@ RM_CSV=$(realpath "$RM_CSV")
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for ms in "${MS_IN[@]}"; do
-    RUNFOLDER="polimaging_${ms##*/}"
+#    RUNFOLDER="polimaging_${ms##*/}"
+    RUNFOLDER="${ms##*/}_imaging"
     MS=$(realpath "$ms")
 
     mkdir -p "$RUNFOLDER"
     cd "$RUNFOLDER"
 
-    # Run the wsclean imaging script
-    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
+    # Imaging
+#    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
 
-    # Run the Python script for the current measurement set
+    # Run polarisation alignment with measurement set
     python "$SCRIPT_DIR/scripts/polalign.py" \
       --region_file "$REGION" \
       --msin "$MS" \
