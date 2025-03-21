@@ -45,7 +45,7 @@ class PhaseRotate:
             with table(ms_in+"::SPECTRAL_WINDOW", ack=False) as ms:
                 self.freqs = ms.getcol("CHAN_FREQ")[0]
             with table(ms_in, ack=False) as ms:
-                self.time = np.unique(ms.getcol("TIME"))[0]
+                self.time = np.array([np.unique(ms.getcol("TIME"))[0]])
             with table(ms_in+"::ANTENNA", ack=False) as ms:
                 self.ant = np.array(ms.getcol("NAME")).astype("S")
 
