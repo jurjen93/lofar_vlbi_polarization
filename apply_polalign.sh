@@ -12,9 +12,12 @@ while [[ "$#" -gt 0 ]]; do
             REGION="$2"
             shift
             ;;
-        -ms) # array of input MS
-            MS_IN+=("$2")
-            shift
+        -ms) # array of MS
+            shift  # skip the -ms flag
+            while [[ "$#" -gt 0 ]] && [[ ! "$1" =~ ^- ]]; do
+                MS_IN+=("$1")
+                shift
+            done
             ;;
         -rm_csv) # input RM CSV (output from reference observation)
             RM_CSV="$2"
