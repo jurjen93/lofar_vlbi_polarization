@@ -44,8 +44,8 @@ if [ -z $RM_CSV ]; then
     exit 1
 fi
 
-$RM_CSV = $(realpath $RM_CSV)
-$REGION = $(realpath $REGION)
+$RM_CSV=$(realpath $RM_CSV)
+$REGION=$(realpath $REGION)
 
 
 # Script directory path
@@ -53,11 +53,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for ms in "${MS_IN[@]}"; do
 
-  RUNFOLDER=polimaging_${ms##/*}
-  MS = $(realpath $ms)
+  RUNFOLDER=polimaging_${ms##*/}
+  MS=$(realpath $ms)
 
-  mkdir -p RUNFOLDER
-  cd RUNFOLDER
+  mkdir -p $RUNFOLDER
+  cd $RUNFOLDER
 
   source $SCRIPT_DIR/scripts/wsclean_imaging.sh ${MS}
 
@@ -67,4 +67,11 @@ for ms in "${MS_IN[@]}"; do
     --msin $MS_IN $MS \
     --RM_offset_csv $RM_CSV \
     --applycal
+
+  cd ../
+
 done
+
+mkdir -p output
+mv */polalign*.ms output
+mv */*_polrot.h5 output
