@@ -8,31 +8,30 @@ RM_CSV=""
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -region) # input region file
+        -region) # input region
             REGION="$2"
-            shift
+            shift 2
             ;;
-        -ms) # array of MS
+        -ms) # input MS array (can accept multiple values)
             shift  # skip the -ms flag
             while [[ "$#" -gt 0 ]] && [[ ! "$1" =~ ^- ]]; do
                 MS_IN+=("$1")
                 shift
             done
             ;;
-        -rm_csv) # input RM CSV (output from reference observation)
+        -rm_csv) # input CSV with offset and RM
             RM_CSV="$2"
-            shift
+            shift 2
             ;;
         *)
             echo "Unknown parameter: $1"
             exit 1
             ;;
     esac
-    shift
 done
 
 # Check if required arguments are provided
-if [ -z $REGION ]; then
+if [ -z "$REGION" ]; then
     echo "Error: -region argument is required."
     exit 1
 fi
@@ -42,37 +41,36 @@ if [ ${#MS_IN[@]} -eq 0 ]; then
     exit 1
 fi
 
-if [ -z $RM_CSV ]; then
+if [ -z "$RM_CSV" ]; then
     echo "Error: -rm_csv argument is required."
     exit 1
 fi
 
-$RM_CSV=$(realpath $RM_CSV)
-$REGION=$(realpath $REGION)
-
+# Convert paths to absolute paths
+REGION=$(realpath "$REGION")
+RM_CSV=$(realpath "$RM_CSV")
 
 # Script directory path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for ms in "${MS_IN[@]}"; do
+    RUNFOLDER="polimaging_${ms##*/}"
+    MS=$(realpath "$ms")
 
-  RUNFOLDER=polimaging_${ms##*/}
-  MS=$(realpath $ms)
+    mkdir -p "$RUNFOLDER"
+    cd "$RUNFOLDER"
 
-  mkdir -p $RUNFOLDER
-  cd $RUNFOLDER
+    # Run the wsclean imaging script
+    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
 
-  source $SCRIPT_DIR/scripts/wsclean_imaging.sh ${MS}
+    # Run the Python script for the current measurement set
+    python "$SCRIPT_DIR/scripts/polalign.py" \
+      --region_file "$REGION" \
+      --msin "$MS" \
+      --RM_offset_csv "$RM_CSV" \
+      --applycal
 
-  # Run the Python script
-  python $SCRIPT_DIR/scripts/polalign.py \
-    --region_file $REGION \
-    --msin $MS_IN $MS \
-    --RM_offset_csv $RM_CSV \
-    --applycal
-
-  cd ../
-
+    cd ../
 done
 
 mkdir -p output
