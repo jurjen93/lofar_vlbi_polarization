@@ -2,7 +2,7 @@
 
 # Initialize variables for required arguments
 REGION=""
-MS_IN=""
+declare -a MS_IN=()
 RM_CSV=""
 
 # Parse command-line arguments
