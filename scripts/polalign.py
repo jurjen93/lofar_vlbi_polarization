@@ -265,12 +265,12 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
             print('STUCK: negative polarization fraction')
             sys.exit()
 
-    fitstr = 'fit:  RM=' + str(round(fitQU_depol[1], 3)) + '$\pm$' + str(
-        round(fitQU_depol_err[1], 3)) + ' [rad m$^{-2}$];  $\chi_{ref}=$' + str(
-        round(fitQU_depol[2], 3)) + '$\pm$' + str(round(fitQU_depol_err[2], 3)) + ' [rad];\n $\sigma_{RM}^{2}=$' + str(
-        round(fitQU_depol[3], 3)) + '$\pm$' + str(
-        round(fitQU_depol_err[3], 3)) + ' [rad$^{2}$ m$^{-4}$];  $p_0=$' + str(
-        round(fitQU_depol[0], 3)) + '$\pm$' + str(round(fitQU_depol_err[0], 3))
+    fitstr = 'fit:  RM=' + str(round(fitQU_depol[1], 3)) + r'$\pm$' + str(
+        round(fitQU_depol_err[1], 3)) + r' [rad m$^{-2}$];  $\chi_{ref}=$' + str(
+        round(fitQU_depol[2], 3)) + r'$\pm$' + str(round(fitQU_depol_err[2], 3)) + r' [rad];\n $\sigma_{RM}^{2}=$' + str(
+        round(fitQU_depol[3], 3)) + r'$\pm$' + str(
+        round(fitQU_depol_err[3], 3)) + r' [rad$^{2}$ m$^{-4}$];  $p_0=$' + str(
+        round(fitQU_depol[0], 3)) + r'$\pm$' + str(round(fitQU_depol_err[0], 3))
 
     plt.plot(freqvec / 1e6, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='black',
              label='Stokes I fit')
@@ -305,7 +305,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
              label='Stokes U fit', color='purple')
 
     # plt.plot(wav**2, np.sqrt(Uflux**2 + Qflux**2), linestyle="",marker="o", label='Stokes P')
-    plt.xlabel('$\lambda^2$ [m$^2$]')
+    plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
     plt.legend(loc='upper right')
     plt.title(L + ' ' + fitstr)
@@ -319,7 +319,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.plot(wav ** 2, Imodel * fitQU_depol[0] * np.sin(
         2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4),
              label='Stokes U fit', color='purple')
-    plt.xlabel('$\lambda^2$ [m$^2$]')
+    plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
     plt.legend(loc='upper right')
 
@@ -343,7 +343,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
 
     plt.plot(wav ** 2, 0.5 * np.arctan2(Umodel, Qmodel), label='model fit', color='black')
 
-    plt.xlabel('$\lambda^2$ [m$^2$]')
+    plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Polarization angle [rad]')
     plt.title(L + ' ' + fitstr)
     # plt.xlim(3.2, 6.85)
