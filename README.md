@@ -13,7 +13,7 @@ This step runs RM synthesis and returns a `RMsynth_ref_output` output directory 
 This step uses the reference observation (on which you ran RM synthesis) and the DS9 region file input from the previous step to obtain the reference values for the RM in CSV format.
 The `<INPUT_DIRECTORY>` should be the directory with the RM synthesis output, which is by default called `RMsynth_ref_output`.
 4) Run `source apply_polalign.sh -region <DS9_regionfile> -ms <INPUT_MS_ARRAY> -rm_csv <RM_CSV>` \
-This step obtains and applies the polarisation alignment corrections, using the DS9 region file and the RM reference values from the previous step. Note that `-ms` can be many meusurement sets at the same, since the script will loop over these.
+This step obtains and applies the polarisation alignment corrections, using the DS9 region file and the RM reference values from the previous step. Note that `-ms` can take multiple MeasurementSets at the same, since the script will loop over these (such as a global like *.ms).
 The final output is folder called `output`, which has the MeasurementSets with the corrections applied and the corrections in h5parm format. These h5parm corrections are scalar values constant over time but with a frequency variability.
 
 #### Future improvements:
