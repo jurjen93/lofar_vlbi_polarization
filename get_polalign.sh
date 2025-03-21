@@ -6,11 +6,23 @@ OUTPUT_DIR="./"
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --region_file) REGION_FILE="$2"; shift ;;  # Region file
-        --input_directory) INPUT_DIR="$2"; shift ;;  # Optional input directory
-        --output_directory) OUTPUT_DIR="$2"; shift ;;  # Optional output directory
-        *) echo "Unknown parameter: $1"; exit 1 ;;
+    case "$1" in
+        --region_file)
+            REGION_FILE="$2"
+            shift
+            ;;
+        --input_directory)
+            INPUT_DIR="$2"
+            shift
+            ;;
+        --output_directory)
+            OUTPUT_DIR="$2"
+            shift
+            ;;
+        *)
+            echo "Unknown parameter: $1"
+            exit 1
+            ;;
     esac
     shift
 done
@@ -26,6 +38,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Run script
 python "$SCRIPT_DIR/scripts/polalign.py" \
-  --input_directory $INPUT_DIR \
-  --output_directory $OUTPUT_DIR \
-  --region_file "REGION_FILE
+  --input_directory "$INPUT_DIR" \
+  --output_directory "$OUTPUT_DIR" \
+  --region_file "$REGION_FILE"
