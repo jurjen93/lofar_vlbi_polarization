@@ -18,6 +18,8 @@ from utils.RM_functions import functionRM, functionRMdepol, function_synch_simpl
 from utils.parsing import extract_l_number
 from pol_phase_rot import PhaseRotate
 
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning)
 matplotlib.use('QtAgg')
 
 
@@ -446,7 +448,7 @@ def main():
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["RM", "Offset"])  # Write header
-        writer.writerows([RM, offset])  # Write data
+        writer.writerow([RM, offset])  # Write data
 
     if ((args.ref_RM is not None and args.ref_offset is not None) or args.RM_offset_csv is not None
             and args.msin is not None):
