@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Default values
-INPUT_DIR="./"
-OUTPUT_DIR="./"
-
 # Initialize variables for required arguments
 REGION=""
 MS_IN=""
@@ -12,24 +8,16 @@ RM_CSV=""
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -region)
+        -region) # input region file
             REGION="$2"
             shift
             ;;
-        -ms)
-            MS_IN="$2"
+        -ms) # array of input MS
+            MS_IN+=("$2")
             shift
             ;;
-        -rm_csv)
+        -rm_csv) # input RM CSV (output from reference observation)
             RM_CSV="$2"
-            shift
-            ;;
-        -in_dir)
-            INPUT_DIR="$2"
-            shift
-            ;;
-        -out_dir)
-            OUTPUT_DIR="$2"
             shift
             ;;
         *)
@@ -46,8 +34,8 @@ if [ -z $REGION ]; then
     exit 1
 fi
 
-if [ -z $MS_IN ]; then
-    echo "Error: -ms argument is required."
+if [ ${#MS_IN[@]} -eq 0 ]; then
+    echo "Error: at least one -ms argument is required."
     exit 1
 fi
 
@@ -56,15 +44,27 @@ if [ -z $RM_CSV ]; then
     exit 1
 fi
 
+$RM_CSV = $(realpath $RM_CSV)
+$REGION = $(realpath $REGION)
+
 
 # Script directory path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Run the Python script
-python "$SCRIPT_DIR/scripts/polalign.py" \
-  --input_directory $INPUT_DIR \
-  --output_directory $OUTPUT_DIR \
-  --region_file $REGION \
-  --msin $MS_IN \
-  --RM_offset_csv $RM_CSV \
-  --applycal
+for ms in "${MS_IN[@]}"; do
+
+  RUNFOLDER=polimaging_${ms##/*}
+  MS = $(realpath $ms)
+
+  mkdir -p RUNFOLDER
+  cd RUNFOLDER
+
+  source $SCRIPT_DIR/scripts/wsclean_imaging.sh ${MS}
+
+  # Run the Python script
+  python $SCRIPT_DIR/scripts/polalign.py \
+    --region_file $REGION \
+    --msin $MS_IN $MS \
+    --RM_offset_csv $RM_CSV \
+    --applycal
+done
