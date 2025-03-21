@@ -54,15 +54,14 @@ RM_CSV=$(realpath "$RM_CSV")
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for ms in "${MS_IN[@]}"; do
-#    RUNFOLDER="polimaging_${ms##*/}"
-    RUNFOLDER="${ms##*/}_imaging"
+    RUNFOLDER="polimaging_${ms##*/}"
     MS=$(realpath "$ms")
 
     mkdir -p "$RUNFOLDER"
     cd "$RUNFOLDER"
 
     # Imaging
-#    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
+    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
 
     # Run polarisation alignment with measurement set
     python "$SCRIPT_DIR/scripts/polalign.py" \

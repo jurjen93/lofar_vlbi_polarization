@@ -28,3 +28,9 @@ wsclean \
 -nmiter 12 \
 -niter 15000 \
 ${MS}
+
+# Cleanup
+rm *-0???-*residual*.fits
+rm *-0???-*psf*.fits
+rm *-0???-*model*.fits
+rm *-0???-*dirty*.fits

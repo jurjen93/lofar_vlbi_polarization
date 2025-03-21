@@ -1,10 +1,15 @@
 #!/bin/bash
 
 # Input
-MSIN=$1
+MSIN=$(realpath $1)
 
 # Script directory path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Make RUNDIR
+RUNDIR=RMsynth_ref_output
+mkdir -p ${RUNDIR}
+cd ${RUNDIR}
 
 # Run imaging
 source $SCRIPT_DIR/scripts/wsclean_imaging.sh ${MSIN}
