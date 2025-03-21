@@ -451,7 +451,10 @@ def main():
     if ((args.ref_RM is not None and args.ref_offset is not None) or args.RM_offset_csv is not None
             and args.msin is not None):
         if args.RM_offset_csv is not None:
-            df = pd.read_csv(args.RM_offset_csv)
+            try:
+                df = pd.read_csv(args.RM_offset_csv)
+            except FileNotFoundError:
+                df = pd.read_csv(glob(args.RM_offset_csv)[0])
             ref_RM = df['RM'][0]
             ref_offset = df['Offset'][0]
         else:
