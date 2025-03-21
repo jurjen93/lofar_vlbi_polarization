@@ -3,8 +3,7 @@
 #INPUT
 REGION=$1
 MS_IN=$2
-REF_RM=$3
-REF_OFFSET=$4
+RM_CSV=$3
 
 # Script directory path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,5 +14,5 @@ python $SCRIPT_DIR/scripts/polalign.py \
   --output_directory "./" \
   --region_file ${REGION} \
   --input_ms ${MS_IN} \
-  --ref_RM ${REF_RM} \
-  --ref_offset ${REF_OFFSET}
+  --RM_offset_CSV ${RM_CSV} \
+  --applycal

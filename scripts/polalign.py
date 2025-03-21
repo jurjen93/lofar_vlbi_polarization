@@ -1,16 +1,21 @@
-import matplotlib
-import numpy as np
 import sys
+import csv
+from argparse import ArgumentParser
 from glob import glob
+
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import scipy.optimize
+import pandas as pd
+
 from astropy.io import fits
 from astropy import units as u
 import pyregion
-import matplotlib.pyplot as plt
-import scipy.optimize
+
 from utils.fits_handling import flatten, make_freq_vec, make_noise_vec
 from utils.RM_functions import functionRM, functionRMdepol, function_synch_simple, make_P
 from utils.parsing import extract_l_number
-from argparse import ArgumentParser
 from pol_phase_rot import PhaseRotate
 
 matplotlib.use('QtAgg')
@@ -119,7 +124,7 @@ def getallfluxes(Ifiles: list = None, Qfiles: list = None, Ufiles: list = None, 
     return freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U
 
 
-def phase_rot(h5_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
+def phase_rot(ms_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
     """
     Make template h5 with default values (phase=0 and amplitude=1) and convert to phase rotate matrix
     for polarization alignment between different observations.
@@ -130,7 +135,7 @@ def phase_rot(h5_in: str = None, h5_out: str = None, intercept: float = None, rm
         rm: RM value
     """
 
-    phaserot = PhaseRotate(h5_in, h5_out)
+    phaserot = PhaseRotate(ms_in=ms_in, h5_out=h5_out)
     phaserot.make_template(polrot=True)
     phaserot.rotate(intercept=intercept, rotation_measure=rm)
     phaserot.h5.close()
@@ -379,7 +384,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     return fitQU_depol[1], fitQU_depol[2], lambdaref2, L
 
 
-def get_phase_rot(RM, offset, h5_in=None, ref_RM=6.30423201, ref_offset=0.8701224377970226, lambdaref2=None, L=None):
+def get_phase_rot(RM, offset, input_ms=None, ref_RM=6.30423201, ref_offset=0.8701224377970226, lambdaref2=None, L=None):
     """
     Get phase rotation h5parm
     """
@@ -399,10 +404,13 @@ def get_phase_rot(RM, offset, h5_in=None, ref_RM=6.30423201, ref_offset=0.870122
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 
-    if h5_in is not None:
+    if input_ms is not None:
         h5_out = L.split('_')[0] + '_polrot.h5'
-        phase_rot(h5_in, h5_out, 2. * (delta_offset - (delta_RM * lambdaref2)), 2. * delta_RM)
-    return
+        phase_rot(input_ms=input_ms,
+                  h5_out=h5_out,
+                  intercept=2. * (delta_offset - (delta_RM * lambdaref2)),
+                  rm=2. * delta_RM)
+    return h5_out
 
 
 def parse_args():
@@ -412,9 +420,12 @@ def parse_args():
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region_file', help='DS9 region file', type=str, required=True)
-    parser.add_argument('--input_h5', help='Input h5parm file', type=str)
+    parser.add_argument('--msin', help='Input h5parm file', type=str)
     parser.add_argument('--ref_RM', help='Reference RM', type=float, default=None)
     parser.add_argument('--ref_offset', help='Reference offset', type=float, default=None)
+    parser.add_argument('--RM_offset_CSV', help='Input CSV with RM and offset from reference observation (instead of --ref_offset or --ref_RM)')
+    parser.add_argument('--applycal', action='store_true', help='Apply corrections to MS')
+
     return parser.parse_args()
 
 
@@ -428,8 +439,31 @@ def main():
 
     RM, offset, lambdaref2, L = find_RMandoffets(i_fits, u_fits, q_fits, args.region_file)
 
-    if args.ref_RM is not None and args.ref_offset is not None and args.input_h5 is not None:
-        get_phase_rot(RM, offset, args.input_h5, args.ref_RM, args.ref_offset, lambdaref2, L)
+    # File name
+    csv_filename = "rm_offset_data.csv"
+
+    # Write to CSV
+    with open(csv_filename, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["RM", "Offset"])  # Write header
+        writer.writerows([RM, offset])  # Write data
+
+    if ((args.ref_RM is not None and args.ref_offset is not None) or args.RM_offset_csv is not None
+            and args.msin is not None):
+        if args.RM_offset_csv is not None:
+            df = pd.read_csv(args.RM_offset_CSV)
+            ref_RM = df['RM'][0]
+            ref_offset = df['Offset'][0]
+        else:
+            ref_RM = args.ref_RM
+            ref_offset = args.ref_offset
+        h5_out = get_phase_rot(RM, offset, args.msin, ref_RM, ref_offset, lambdaref2, L)
+
+    if args.applycal:
+        from applycal import ApplyCal
+        Ac = ApplyCal(msin=args.msin, h5=h5_out, msout='polaligned_'+args.msin.split("/")[-1])
+        Ac.print_cmd()
+        Ac.run()
 
 
 if __name__ == "__main__":

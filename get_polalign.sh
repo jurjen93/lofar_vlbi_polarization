@@ -1,13 +1,31 @@
 #!/bin/bash
 
-#INPUT
-REGION=$1
+# Default values
+INPUT_DIR="./"
+OUTPUT_DIR="./"
+
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --region_file) REGION_FILE="$2"; shift ;;  # Region file
+        --input_directory) INPUT_DIR="$2"; shift ;;  # Optional input directory
+        --output_directory) OUTPUT_DIR="$2"; shift ;;  # Optional output directory
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Check if required argument is provided
+if [ -z "$REGION_FILE" ]; then
+    echo "Error: --region_file argument is required."
+    exit 1
+fi
 
 # Script directory path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Run script
-python $SCRIPT_DIR/scripts/polalign.py \
-  --input_directory "./" \
-  --output_directory "./" \
-  --region_file ${REGION}
+python "$SCRIPT_DIR/scripts/polalign.py" \
+  --input_directory $INPUT_DIR \
+  --output_directory $OUTPUT_DIR \
+  --region_file "REGION_FILE
