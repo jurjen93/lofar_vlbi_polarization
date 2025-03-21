@@ -17,4 +17,3 @@ python $SCRIPT_DIR/scripts/polalign.py \
   --input_h5 ${H5_IN} \
   --ref_RM ${REF_RM} \
   --ref_offset ${REF_OFFSET}
-

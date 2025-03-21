@@ -3,6 +3,9 @@ import os
 import numpy as np
 from argparse import ArgumentParser
 from scipy.constants import speed_of_light
+import sys
+from casacore.tables import table
+from shutil import copy
 
 circ2lin_math = """
 -----------------------------
@@ -20,15 +23,37 @@ class PhaseRotate:
     polarization alignment between different observations.
     """
 
-    def __init__(self, name_in, name_out, freqs=None):
-        os.system(' '.join(['cp', name_in, name_out]))
-        self.h5 = tables.open_file(name_out, 'r+')
+    def __init__(self, h5_in=None, ms_in=None, h5_out=None, freqs=None):
+        if h5_in is not None:
+            copy(h5_in, h5_out)
+        else:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            source_file = os.path.join(parent_dir, "tmpdata/tmp.h5")
+            copy(source_file, h5_out)
+
+        self.h5 = tables.open_file(h5_out, 'r+')
         self.axes = ['time', 'freq', 'ant', 'dir', 'pol']
+
         if freqs is not None:
             self.freqs = freqs
-        else:
+        elif h5_in is not None:
             self.freqs = self.h5.root.sol000.phase000.freq[:]
-        self.ant = self.h5.root.sol000.phase000.ant[:]
+            self.time = np.array([self.h5.root.sol000.phase000.time[:][0]])
+            self.ant = self.h5.root.sol000.phase000.ant[:]
+
+        elif ms_in is not None:
+            with table(ms_in+"::SPECTRAL_WINDOW", ack=False) as ms:
+                self.freq = ms.getcol("CHAN_FREQ")[0]
+            with table(ms_in, ack=False) as ms:
+                self.time = np.unique(ms.getcol("TIME"))[0]
+            with table(ms_in+"::ANTENNA", ack=False) as ms:
+                self.ant = np.array(ms.getcol("NAME")).astype("S")
+
+        else:
+            sys.exit("ERROR: Needs --h5_in or --ms_in")
+
+        # Get directions
         if 'dir' in self.h5.root.sol000.phase000.val.attrs["AXES"].decode('utf8'):
             self.dir = self.h5.root.sol000.phase000.dir[:]
         else:
@@ -94,12 +119,12 @@ class PhaseRotate:
                     amplitudedone = True
                 else:
                     continue
-                self.time = np.array([st.time[:][0]])
                 self.update_array(st, new_val, 'val')
                 self.update_array(st, np.ones(shape), 'weight')
                 self.update_array(st, self.time, 'time')
                 self.update_array(st, np.array(['XX', 'XY', 'YX', 'YY']), 'pol')
                 self.update_array(st, self.freqs, 'freq')
+                self.update_array(st, self.ant, 'ant')
 
             if not amplitudedone:
                 pass
@@ -201,7 +226,8 @@ def parse_args():
     :return: parsed arguments
     """
     parser = ArgumentParser()
-    parser.add_argument('--h5_in', type=str, help='Input h5 (from which to extract the frequencies and antennas)', required=True)
+    parser.add_argument('--h5_in', type=str, help='Input h5 (from which to extract the frequencies and antennas). Instead of --msin_in.')
+    parser.add_argument('--ms_in', type=str, help='Input MS (from which to extract the frequencies and antennas). Instead of --h5_in.')
     parser.add_argument('--h5_out', type=str, help='Output name (output solution file)', required=True)
     parser.add_argument('--intercept', type=float, help='Intercept for rotation angle')
     parser.add_argument('--RM', type=float, help='Rotation measure')
@@ -210,7 +236,11 @@ def parse_args():
 
 def main():
     args = parse_args()
-    phaserot = PhaseRotate(args.h5_in, args.h5_out)
+    if args.h5_in is not None:
+        phaserot = PhaseRotate(h5_in=args.h5_in, h5_out=args.h5_out)
+    else:
+        phaserot = PhaseRotate(ms_in=args.ms_in, h5_out=args.h5_out)
+
     if args.intercept is None:
         phaserot.make_template()
     else:

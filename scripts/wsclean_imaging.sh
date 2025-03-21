@@ -21,7 +21,7 @@ wsclean \
 -wgridder-accuracy 0.0001 \
 -use-differential-lofar-beam \
 -facet-beam-update 120 \
--name pol_imaging \
+-name pol \
 -scale 0.075arcsec \
 -join-polarizations \
 -join-channels \
