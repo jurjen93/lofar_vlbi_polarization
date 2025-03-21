@@ -7,7 +7,7 @@ OUTPUT_DIR="./"
 # Initialize variables for required arguments
 REGION=""
 MS_IN=""
-RM_CSV=*/rm_offset_data.csv
+RM_CSV=""
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -48,6 +48,11 @@ fi
 
 if [ -z $MS_IN ]; then
     echo "Error: -ms argument is required."
+    exit 1
+fi
+
+if [ -z $RM_CSV ]; then
+    echo "Error: -rm_csv argument is required."
     exit 1
 fi
 
