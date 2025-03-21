@@ -406,7 +406,7 @@ def get_phase_rot(RM, offset, input_ms=None, ref_RM=6.30423201, ref_offset=0.870
 
     if input_ms is not None:
         h5_out = L.split('_')[0] + '_polrot.h5'
-        phase_rot(input_ms=input_ms,
+        phase_rot(ms_in=input_ms,
                   h5_out=h5_out,
                   intercept=2. * (delta_offset - (delta_RM * lambdaref2)),
                   rm=2. * delta_RM)
