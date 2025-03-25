@@ -24,5 +24,6 @@ def extract_l_number(filename):
             if match:
                 return match.group(0)
             else:
-                sys.exit("ERROR: No L-number parsed from input")
+                print("ERROR: No L-number parsed from input")
+                return 'polimages'
 

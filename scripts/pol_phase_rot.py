@@ -1,11 +1,12 @@
-import tables
 import os
-import numpy as np
-from argparse import ArgumentParser
-from scipy.constants import speed_of_light
 import sys
-from casacore.tables import table
+from argparse import ArgumentParser
 from shutil import copy
+
+import numpy as np
+from scipy.constants import speed_of_light
+import tables
+from casacore.tables import table
 
 circ2lin_math = """
 -----------------------------

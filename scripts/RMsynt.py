@@ -1,7 +1,8 @@
-from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
-from utils.fits_handling import get_header, make_freq_vec, make_image_cube
 from argparse import ArgumentParser
 from glob import glob
+
+from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
+from utils.fits_handling import get_header, make_freq_vec, make_image_cube
 
 
 def do_RMsynt(q_images: list = None, u_images: list = None, output_prefix: str = 'prefix',
