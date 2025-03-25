@@ -263,7 +263,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
             print('STUCK: negative polarization fraction')
             sys.exit()
 
-    fitstr = 'fit:  RM=' + str(round(fitQU_depol[1], 3)) + r'$\pm$' + str(
+    fitstr = r'fit:  RM=' + str(round(fitQU_depol[1], 3)) + r'$\pm$' + str(
         round(fitQU_depol_err[1], 3)) + r' [rad m$^{-2}$];  $\chi_{ref}=$' + str(
         round(fitQU_depol[2], 3)) + r'$\pm$' + str(round(fitQU_depol_err[2], 3)) + r' [rad];\n $\sigma_{RM}^{2}=$' + str(
         round(fitQU_depol[3], 3)) + r'$\pm$' + str(
@@ -283,46 +283,58 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.savefig(L + '_StokesIQU_freq.png')
     plt.close()
 
+    # --- Plot Stokes I ---
     plt.figure(figsize=(8 * 1.5, 6 * 1.25))
     plt.subplot(2, 1, 1)
     plt.errorbar(wav ** 2, Iflux, yerr=sigma_I, linestyle="", marker="o", label='Stokes I', color='black')
     plt.plot(wav ** 2, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='black',
              label='Stokes I fit')
-    plt.errorbar(wav ** 2, Qflux, yerr=sigma_Q, linestyle="", marker="o", label='Stokes Q', color='blue')
-    plt.errorbar(wav ** 2, Uflux, yerr=sigma_U, linestyle="", marker="o", label='Stokes U', color='purple')
-
-    # RM only
-    # plt.plot(wav**2, fitQU[0]*np.cos(2.*(fitQU[1]*(wav**2-lambdaref2) + fitQU[2])), label='Stokes U fit', color='blue')
-    # plt.plot(wav**2, fitQU[0]*np.sin(2.*(fitQU[1]*(wav**2-lambdaref2) + fitQU[2])), label='Stokes Q fit', color='purple')
-    # with depol
-    plt.plot(wav ** 2, Imodel * fitQU_depol[0] * np.cos(
-        2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4),
-             label='Stokes Q fit', color='blue')
-    plt.plot(wav ** 2, Imodel * fitQU_depol[0] * np.sin(
-        2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4),
-             label='Stokes U fit', color='purple')
-
-    # plt.plot(wav**2, np.sqrt(Uflux**2 + Qflux**2), linestyle="",marker="o", label='Stokes P')
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
-    plt.legend(loc='upper right')
+    # plt.legend(loc='upper right')
     plt.title(L + ' ' + fitstr)
+    plt.tight_layout()
 
-    plt.subplot(2, 1, 2)
-    plt.errorbar(wav ** 2, Qflux, yerr=sigma_Q, linestyle="", marker="o", label='Stokes Q', color='blue')
-    plt.errorbar(wav ** 2, Uflux, yerr=sigma_U, linestyle="", marker="o", label='Stokes U', color='purple')
-    plt.plot(wav ** 2, Imodel * fitQU_depol[0] * np.cos(
-        2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4),
-             label='Stokes Q fit', color='blue')
-    plt.plot(wav ** 2, Imodel * fitQU_depol[0] * np.sin(
-        2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4),
-             label='Stokes U fit', color='purple')
+    plt.savefig(L + '_StokesI_wav2.png')
+    plt.close()
+
+    # --- Plot Stokes Q ---
+    plt.subplot(2, 1, 1)
+    plt.errorbar(
+        wav ** 2, Qflux, yerr=sigma_Q,
+        linestyle="", marker="o", label='Stokes Q', color='blue'
+    )
+    plt.plot(
+        wav ** 2,
+        Imodel * fitQU_depol[0] *
+        np.cos(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
+        np.exp(-2 * fitQU_depol[3] * wav ** 4),
+        label='Stokes Q fit', color='blue'
+    )
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
-    plt.legend(loc='upper right')
+    plt.title('Stokes Q')
 
-    plt.savefig(L + '_StokesIQU_wav2.png')
+    # --- Plot Stokes U ---
+    plt.subplot(2, 1, 2)
+    plt.errorbar(
+        wav ** 2, Uflux, yerr=sigma_U,
+        linestyle="", marker="o", label='Stokes U', color='purple'
+    )
+    plt.plot(
+        wav ** 2,
+        Imodel * fitQU_depol[0] *
+        np.sin(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
+        np.exp(-2 * fitQU_depol[3] * wav ** 4),
+        label='Stokes U fit', color='purple'
+    )
+    plt.xlabel(r'$\lambda^2$ [m$^2$]')
+    plt.ylabel('Flux [Jy]')
+    plt.title('Stokes U')
+
+    # Finalise plot
     plt.tight_layout()
+    plt.savefig(f"{L}_StokesQU_wav2.png")
     plt.close()
 
     plt.figure(figsize=(8 * 1.5, 6 * 1.25))
