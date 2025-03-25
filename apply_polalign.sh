@@ -61,7 +61,7 @@ for ms in "${MS_IN[@]}"; do
     cd "$RUNFOLDER"
 
     # Imaging
-    source "$SCRIPT_DIR/scripts/wsclean_imaging.sh" "$MS"
+    source "$SCRIPT_DIR/scripts/wsclean_imaging_0.6.sh" "$MS"
 
     # Run polarisation alignment with measurement set
     python "$SCRIPT_DIR/scripts/polalign.py" \

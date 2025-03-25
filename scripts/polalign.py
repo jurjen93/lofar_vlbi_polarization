@@ -157,10 +157,12 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     Return: RM, offset, lambda ref, L-number
     """
 
+    # Sort on name
     i_fits = sorted(i_fits)
     u_fits = sorted(u_fits)
     q_fits = sorted(q_fits)
 
+    # Future update?
     lambdaref2 = 4.5  # (np.mean(wav**2))
     x0_QU = np.array([0.2, 6.0, 0.9])  # initial guess QU fitting
     x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
@@ -292,9 +294,10 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.subplot(3, 1, 1)
     plt.errorbar(wav ** 2, Iflux, yerr=sigma_I, linestyle="", marker="s", label='Stokes I', color='black')
     plt.plot(wav ** 2, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='darkred',
-             label='Stokes I fit')
+             linestyle='--', label='Stokes I fit')
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
+    plt.title('Stokes I')
     # plt.title(L + ' ' + fitstr)
     plt.tight_layout()
 
@@ -328,6 +331,8 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.savefig(f"{L}_StokesIQU_wav2.png")
     plt.close()
 
+
+    # --- Plot Polarization Angle ---
     plt.figure(figsize=(8 * 1.5, 6 * 1.25))
     plt.subplot(2, 1, 1)
     polangle_sigma = 0.5 * np.sqrt((((sigma_U ** 2) * (Qflux ** 2)) + ((sigma_Q ** 2) * (Uflux ** 2))) / (
@@ -346,7 +351,6 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
 
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Polarization angle [rad]')
-    # plt.title(L + ' ' + fitstr)
     plt.ylim(-0.5 * np.pi, 0.5 * np.pi)
 
     pfracion_sigma_p1 = (sigma_I ** 2) * (Qflux ** 2 + Uflux ** 2) ** 2
@@ -355,6 +359,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     pfracion_sigma = np.sqrt((pfracion_sigma_p1 + pfracion_sigma_p2) / pfracion_sigma_p3)
     P = make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux
 
+    # --- Plot Polarization Percentage ---
     plt.subplot(2, 1, 2)
     plt.errorbar(freqvec[P > 0] / 1e6, 100. * P[P > 0], yerr=100. * pfracion_sigma[P > 0], linestyle="", marker="s",
                  color='black', label='polarization fraction')
@@ -363,7 +368,6 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.plot(freqvec / 1e6, 100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel, label='model fit', color='darkred', linestyle='--')
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('Polarization percentage')
-    # plt.title(L + ' ' + fitstr)
     plt.savefig(L + '_polangle_frac.png')
     plt.ylim(-1, 10)
     plt.tight_layout()
@@ -371,6 +375,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.close()
 
     # RM , offset, lambda ref, L-number
+    print(fitstr)
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
