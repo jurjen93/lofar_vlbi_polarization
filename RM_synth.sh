@@ -12,7 +12,7 @@ mkdir -p ${RUNDIR}
 cd ${RUNDIR}
 
 # Run imaging
-source $SCRIPT_DIR/scripts/wsclean_imaging.sh ${MSIN}
+source $SCRIPT_DIR/scripts/wsclean_imaging_0.6.sh ${MSIN}
 
 # Run RMsynt
 python $SCRIPT_DIR/scripts/RMsynt.py \
