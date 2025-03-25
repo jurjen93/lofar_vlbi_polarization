@@ -157,6 +157,10 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     Return: RM, offset, lambda ref, L-number
     """
 
+    i_fits = sorted(i_fits)
+    u_fits = sorted(u_fits)
+    q_fits = sorted(q_fits)
+
     lambdaref2 = 4.5  # (np.mean(wav**2))
     x0_QU = np.array([0.2, 6.0, 0.9])  # initial guess QU fitting
     x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
@@ -222,6 +226,9 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     sigma_I = sigma_I[sort_idx]
     sigma_Q = sigma_Q[sort_idx]
     sigma_U = sigma_U[sort_idx]
+
+    print(Uflux)
+    print(Qflux)
 
     # fit I again but now with cleaned data
     fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
@@ -309,7 +316,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
         Imodel * fitQU_depol[0] *
         np.cos(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes Q fit', color='black', linestyle='--'
+        label='Stokes Q fit', color='darkred', linestyle='--'
     )
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
@@ -326,7 +333,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
         Imodel * fitQU_depol[0] *
         np.sin(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes U fit', color='black', linestyle='--'
+        label='Stokes U fit', color='darkred', linestyle='--'
     )
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
