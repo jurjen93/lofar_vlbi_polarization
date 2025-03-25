@@ -302,14 +302,14 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.subplot(2, 1, 1)
     plt.errorbar(
         wav ** 2, Qflux, yerr=sigma_Q,
-        linestyle="", marker="o", label='Stokes Q', color='blue'
+        linestyle="", marker="s", label='Stokes Q', color='black'
     )
     plt.plot(
         wav ** 2,
         Imodel * fitQU_depol[0] *
         np.cos(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes Q fit', color='blue'
+        label='Stokes Q fit', color='black', linestyle='--', size=5
     )
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
@@ -319,14 +319,14 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.subplot(2, 1, 2)
     plt.errorbar(
         wav ** 2, Uflux, yerr=sigma_U,
-        linestyle="", marker="o", label='Stokes U', color='purple'
+        linestyle="", marker="s", label='Stokes U', color='black', size=5
     )
     plt.plot(
         wav ** 2,
         Imodel * fitQU_depol[0] *
         np.sin(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes U fit', color='purple'
+        label='Stokes U fit', color='black', linestyle='--'
     )
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
