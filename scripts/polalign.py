@@ -227,9 +227,6 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     sigma_Q = sigma_Q[sort_idx]
     sigma_U = sigma_U[sort_idx]
 
-    print(Uflux)
-    print(Qflux)
-
     # fit I again but now with cleaned data
     fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
     # fitI, pcov_I = scipy.optimize.curve_fit(function_synch, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
@@ -291,57 +288,44 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.close()
 
     # --- Plot Stokes I ---
-    plt.figure(figsize=(8 * 1.5, 6 * 1.25))
-    plt.subplot(2, 1, 1)
-    plt.errorbar(wav ** 2, Iflux, yerr=sigma_I, linestyle="", marker="o", label='Stokes I', color='black')
-    plt.plot(wav ** 2, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='black',
+    plt.figure(figsize=(12, 11.25))
+    plt.subplot(3, 1, 1)
+    plt.errorbar(wav ** 2, Iflux, yerr=sigma_I, linestyle="", marker="s", label='Stokes I', color='black')
+    plt.plot(wav ** 2, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='darkred',
              label='Stokes I fit')
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
-    # plt.legend(loc='upper right')
-    plt.title(L + ' ' + fitstr)
+    # plt.title(L + ' ' + fitstr)
     plt.tight_layout()
 
-    plt.savefig(L + '_StokesI_wav2.png')
-    plt.close()
-
     # --- Plot Stokes Q ---
-    plt.subplot(2, 1, 1)
-    plt.errorbar(
-        wav ** 2, Qflux, yerr=sigma_Q,
-        linestyle="", marker="s", label='Stokes Q', color='black', markersize=5
-    )
-    plt.plot(
-        wav ** 2,
+    plt.subplot(3, 1, 2)
+    plt.errorbar(wav ** 2, Qflux, yerr=sigma_Q, linestyle="", marker="s", label='Stokes Q', color='black', markersize=5)
+    plt.plot(wav ** 2,
         Imodel * fitQU_depol[0] *
         np.cos(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes Q fit', color='darkred', linestyle='--'
-    )
+        label='Stokes Q fit', color='darkred', linestyle='--')
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
     plt.title('Stokes Q')
 
     # --- Plot Stokes U ---
-    plt.subplot(2, 1, 2)
-    plt.errorbar(
-        wav ** 2, Uflux, yerr=sigma_U,
-        linestyle="", marker="s", label='Stokes U', color='black', markersize=5
-    )
-    plt.plot(
-        wav ** 2,
+    plt.subplot(3, 1, 3)
+    plt.errorbar(wav ** 2, Uflux, yerr=sigma_U,
+        linestyle="", marker="s", label='Stokes U', color='black', markersize=5)
+    plt.plot(wav ** 2,
         Imodel * fitQU_depol[0] *
         np.sin(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
         np.exp(-2 * fitQU_depol[3] * wav ** 4),
-        label='Stokes U fit', color='darkred', linestyle='--'
-    )
+        label='Stokes U fit', color='darkred', linestyle='--')
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Flux [Jy]')
     plt.title('Stokes U')
 
     # Finalise plot
     plt.tight_layout()
-    plt.savefig(f"{L}_StokesQU_wav2.png")
+    plt.savefig(f"{L}_StokesIQU_wav2.png")
     plt.close()
 
     plt.figure(figsize=(8 * 1.5, 6 * 1.25))
@@ -358,14 +342,12 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     Umodel = Imodel * fitQU_depol[0] * np.sin(
         2. * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) * np.exp(-2. * fitQU_depol[3] * wav ** 4)
 
-    plt.plot(wav ** 2, 0.5 * np.arctan2(Umodel, Qmodel), label='model fit', color='black')
+    plt.plot(wav ** 2, 0.5 * np.arctan2(Umodel, Qmodel), label='model fit', color='darkred', linestyle='--')
 
     plt.xlabel(r'$\lambda^2$ [m$^2$]')
     plt.ylabel('Polarization angle [rad]')
-    plt.title(L + ' ' + fitstr)
-    # plt.xlim(3.2, 6.85)
+    # plt.title(L + ' ' + fitstr)
     plt.ylim(-0.5 * np.pi, 0.5 * np.pi)
-    plt.legend(loc='upper right')
 
     pfracion_sigma_p1 = (sigma_I ** 2) * (Qflux ** 2 + Uflux ** 2) ** 2
     pfracion_sigma_p2 = (Iflux ** 2) * (((sigma_Q ** 2) * (Qflux ** 2)) + ((sigma_U ** 2) * (Uflux ** 2)))
@@ -374,14 +356,13 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     P = make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux
 
     plt.subplot(2, 1, 2)
-    plt.errorbar(freqvec[P > 0] / 1e6, 100. * P[P > 0], yerr=100. * pfracion_sigma[P > 0], linestyle="", marker="o",
+    plt.errorbar(freqvec[P > 0] / 1e6, 100. * P[P > 0], yerr=100. * pfracion_sigma[P > 0], linestyle="", marker="s",
                  color='black', label='polarization fraction')
-    plt.errorbar(freqvec[P == 0] / 1e6, 100. * P[P == 0], yerr=100. * pfracion_sigma[P == 0], linestyle="", marker="o",
+    plt.errorbar(freqvec[P == 0] / 1e6, 100. * P[P == 0], yerr=100. * pfracion_sigma[P == 0], linestyle="", marker="s",
                  color='black', lolims=True)
-    plt.plot(freqvec / 1e6, 100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel, label='model fit', color='black')
+    plt.plot(freqvec / 1e6, 100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel, label='model fit', color='darkred', linestyle='--')
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('Polarization percentage')
-    plt.legend(loc='upper right')
     # plt.title(L + ' ' + fitstr)
     plt.savefig(L + '_polangle_frac.png')
     plt.ylim(-1, 10)
