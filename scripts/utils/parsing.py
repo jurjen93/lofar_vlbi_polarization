@@ -1,6 +1,5 @@
 import re
 from astropy.io import fits
-import sys
 
 def extract_l_number(filename):
     """
