@@ -23,7 +23,6 @@ wsclean \
 -facet-beam-update 120 \
 -name pol \
 -scale 0.075arcsec \
--join-polarizations \
 -join-channels \
 -nmiter 12 \
 -niter 30000 \

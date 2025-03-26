@@ -24,7 +24,6 @@ wsclean \
 -name pol \
 -scale 0.15arcsec \
 -taper-gaussian 0.6asec \
--join-polarizations \
 -join-channels \
 -nmiter 12 \
 -niter 40000 \
