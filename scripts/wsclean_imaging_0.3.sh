@@ -3,11 +3,11 @@
 # Input MS
 MS=$1
 
-# Run wsclean
+# Stokes IV imaging
 wsclean \
 -no-update-model-required \
 -minuv-l 1500.0 \
--size 1600 1600 \
+-size 800 800 \
 -reorder \
 -weight briggs -1.5 \
 -parallel-reordering 4 \
@@ -16,7 +16,7 @@ wsclean \
 -channels-out 96 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
--pol iqu \
+-pol iv \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
 -use-differential-lofar-beam \
@@ -27,6 +27,33 @@ wsclean \
 -join-channels \
 -nmiter 12 \
 -niter 15000 \
+${MS}
+
+# Stokes QU imaging
+wsclean \
+-no-update-model-required \
+-minuv-l 1500.0 \
+-size 800 800 \
+-reorder \
+-weight briggs -1.5 \
+-parallel-reordering 4 \
+-mgain 0.8 \
+-data-column DATA \
+-channels-out 96 \
+-auto-mask 2.5 \
+-auto-threshold 0.5 \
+-pol qu \
+-gridder wgridder \
+-wgridder-accuracy 0.0001 \
+-use-differential-lofar-beam \
+-facet-beam-update 120 \
+-name pol \
+-scale 0.075arcsec \
+-join-polarizations \
+-join-channels \
+-squared-channel-joining \
+-nmiter 10 \
+-niter 10000 \
 ${MS}
 
 # Cleanup
