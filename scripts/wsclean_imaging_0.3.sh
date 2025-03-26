@@ -26,7 +26,7 @@ wsclean \
 -join-polarizations \
 -join-channels \
 -nmiter 12 \
--niter 15000 \
+-niter 30000 \
 ${MS}
 
 # Stokes QU imaging
@@ -53,7 +53,7 @@ wsclean \
 -join-channels \
 -squared-channel-joining \
 -nmiter 10 \
--niter 10000 \
+-niter 20000 \
 ${MS}
 
 # Cleanup
