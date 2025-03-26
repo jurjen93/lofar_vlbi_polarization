@@ -72,7 +72,7 @@ def main():
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
     # Perform RM synthesis
-    do_RMsynt(q_fits, u_fits, args.prefix, args.output_directory, args.dphi, args.phi_max)
+    do_RMsynt(sorted(q_fits), sorted(u_fits), args.prefix, args.output_directory, args.dphi, args.phi_max)
 
 
 if __name__ == "__main__":
