@@ -381,7 +381,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print(f"RM: {fitQU_depol[1]}")
     print(f"offset: {fitQU_depol[2]}")
-    print(f"\lambda_ref: {lambdaref2}")
+    print(f"$\lambda$ (reference): {lambdaref2}")
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
