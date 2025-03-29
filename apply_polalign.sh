@@ -74,5 +74,5 @@ for ms in "${MS_IN[@]}"; do
 done
 
 mkdir -p output
-mv */polalign*.ms output
+mv */polaligned_*.ms output
 mv */*_polrot.h5 output
