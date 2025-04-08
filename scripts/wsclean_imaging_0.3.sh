@@ -18,6 +18,9 @@ wsclean \
 -parallel-gridding 6 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
+-multiscale \
+-multiscale-scale-bias 0.75 \
+-multiscale-max-scales 8 \
 -pol iv \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
@@ -46,9 +49,6 @@ wsclean \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
 -fits-mask pol.mask.fits \
--multiscale \
--multiscale-scale-bias 0.75 \
--multiscale-max-scales 8 \
 -pol qu \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
