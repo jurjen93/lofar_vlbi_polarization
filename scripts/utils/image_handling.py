@@ -19,3 +19,19 @@ def findrms(mIn, maskSup=1e-7):
         return rms
     except ValueError:
         return np.nan
+
+
+def clipped_median(data, sigma_clip=3.0, max_iter=5):
+    """
+    Calculate the clipped median of an 1D array.
+    """
+    data = data[np.isfinite(data)]  # Remove NaN and Inf values
+    for _ in range(max_iter):
+        median = np.median(data)
+        std_dev = np.std(data)
+        mask = np.abs(data - median) < sigma_clip * std_dev
+        new_data = data[mask]
+        if len(new_data) == len(data):
+            break
+        data = new_data
+    return np.median(data)

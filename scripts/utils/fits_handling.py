@@ -122,3 +122,4 @@ def make_noise_vec(Ifits_files):
             noise_array[image_idx] = np.nan
         hdul.close()
     return noise_array
+

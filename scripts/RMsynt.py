@@ -1,12 +1,21 @@
 from argparse import ArgumentParser
 from glob import glob
+from numpy import nan
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
+from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
 from utils.fits_handling import get_header, make_freq_vec, make_image_cube
 
+import multiprocessing
+pool = multiprocessing.Pool()
 
-def do_RMsynt(q_images: list = None, u_images: list = None, output_prefix: str = 'prefix',
-              output_directory: str = './', dphi: float = None, phi_max: float = None, n_samples: int = None):
+def do_RMsynt(q_images: list = None,
+              u_images: list = None,
+              output_prefix: str = 'prefix',
+              output_directory: str = './',
+              dphi: float = None,
+              phi_max: float = None,
+              n_samples: int = None):
     """
     Perform RM synthesis
     Args:
@@ -28,28 +37,63 @@ def do_RMsynt(q_images: list = None, u_images: list = None, output_prefix: str =
     freq_array = make_freq_vec(u_images)
 
     # Make image cubes
+    # i_data, rms_i = make_image_cube(i_images, return_noise=True)
     u_data, rms_u = make_image_cube(u_images, return_noise=True)
     q_data, rms_q = make_image_cube(q_images, return_noise=True)
 
     # Noise vector (take average of Q and U noises)
     rms = 0.5 * (rms_u + rms_q)
 
-    dataArr = run_rmsynth(q_data, u_data, freq_array,
-                          dataI=None, rmsArr=rms,
-                          phiMax_radm2=phi_max, dPhi_radm2=dphi, nSamples=n_samples,
+    dataArr = run_rmsynth(q_data,
+                          u_data,
+                          freq_array,
+                          dataI=None,
+                          rmsArr=rms,
+                          phiMax_radm2=phi_max,
+                          dPhi_radm2=dphi,
+                          nSamples=n_samples,
                           weightType="variance",
-                          fitRMSF=False, nBits=32, verbose=True,
-                          not_rmsf=True)
+                          fitRMSF=False,
+                          nBits=32,
+                          verbose=True,
+                          not_rmsf=False)
 
     writefits(dataArr,
               headtemplate=q_header,
               fitRMSF=False,
               prefixOut=output_prefix,
               outDir=output_directory,
-              write_seperate_FDF=False,
-              not_rmsf=True,
+              write_seperate_FDF=True,
+              not_rmsf=False,
               nBits=32,
-              verbose=False),
+              verbose=False)
+
+    clean_threshold = 1.4e-4
+
+    cleanFDF, ccArr, iterCountArr, residFDF, header = run_rmclean(
+        output_prefix + 'FDF_tot_dirty.fits',
+        output_prefix + 'RMSF_tot.fits',
+        clean_threshold,
+        maxIter=1000,
+        gain=0.1,
+        nBits=32,
+        pool=pool,
+        chunksize=100,
+        verbose=True,
+        log=print,
+        window=nan,
+    )
+
+    writefits_clean(cleanFDF,
+         ccArr,
+         iterCountArr,
+         residFDF,
+         header,
+         prefixOut=output_prefix,
+         outDir=output_directory,
+         write_separate_FDF=True,
+         nBits=32,
+         verbose=False)
 
 
 def parse_args():
