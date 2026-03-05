@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from glob import glob
-from numpy import nan
+from numpy import nan, median
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
@@ -45,18 +45,18 @@ def do_RMsynt(q_images: list = None,
     rms = 0.5 * (rms_u + rms_q)
 
     dataArr = run_rmsynth(q_data,
-                          u_data,
-                          freq_array,
-                          dataI=None,
-                          rmsArr=rms,
-                          phiMax_radm2=phi_max,
-                          dPhi_radm2=dphi,
-                          nSamples=n_samples,
-                          weightType="variance",
-                          fitRMSF=False,
-                          nBits=32,
-                          verbose=True,
-                          not_rmsf=False)
+              u_data,
+              freq_array,
+              dataI=None,
+              rmsArr=rms,
+              phiMax_radm2=phi_max,
+              dPhi_radm2=dphi,
+              nSamples=n_samples,
+              weightType="variance",
+              fitRMSF=False,
+              nBits=32,
+              verbose=True,
+              not_rmsf=False)
 
     writefits(dataArr,
               headtemplate=q_header,
@@ -68,32 +68,30 @@ def do_RMsynt(q_images: list = None,
               nBits=32,
               verbose=False)
 
-    clean_threshold = 1.4e-4
-
     cleanFDF, ccArr, iterCountArr, residFDF, header = run_rmclean(
-        output_prefix + 'FDF_tot_dirty.fits',
-        output_prefix + 'RMSF_tot.fits',
-        clean_threshold,
-        maxIter=1000,
-        gain=0.1,
-        nBits=32,
-        pool=pool,
-        chunksize=100,
-        verbose=True,
-        log=print,
-        window=nan,
-    )
+            output_prefix + 'FDF_tot_dirty.fits',
+            output_prefix + 'RMSF_tot.fits',
+            median(rms),
+            maxIter=1000,
+            gain=0.1,
+            nBits=32,
+            pool=pool,
+            chunksize=100,
+            verbose=True,
+            log=print,
+            window=nan,
+        )
 
     writefits_clean(cleanFDF,
-         ccArr,
-         iterCountArr,
-         residFDF,
-         header,
-         prefixOut=output_prefix,
-         outDir=output_directory,
-         write_separate_FDF=True,
-         nBits=32,
-         verbose=False)
+             ccArr,
+             iterCountArr,
+             residFDF,
+             header,
+             prefixOut=output_prefix,
+             outDir=output_directory,
+             write_separate_FDF=True,
+             nBits=32,
+             verbose=False)
 
 
 def parse_args():

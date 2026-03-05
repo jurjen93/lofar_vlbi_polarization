@@ -3,8 +3,14 @@ from astropy.wcs import WCS
 from astropy.io import fits
 import pyregion
 import matplotlib.pyplot as plt
-from .fits_handling import flatten
-from .image_handling import clipped_median
+from fits_handling import flatten
+from image_handling import clipped_median
+
+# Define your desired font
+font_name = "Serif"  # Change this to your desired font name
+
+# Update Matplotlib font configuration
+plt.rcParams['font.family'] = font_name
 
 
 def extract_RM_spectrum(fitscube, ds9_regionfile):
