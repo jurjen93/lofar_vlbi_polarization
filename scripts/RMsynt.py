@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from glob import glob
-from numpy import nan, median
+from numpy import nan, nanmedian
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
@@ -71,7 +71,7 @@ def do_RMsynt(q_images: list = None,
     cleanFDF, ccArr, iterCountArr, residFDF, header = run_rmclean(
             output_prefix + 'FDF_tot_dirty.fits',
             output_prefix + 'RMSF_tot.fits',
-            median(rms),
+            nanmedian(rms),
             maxIter=1000,
             gain=0.1,
             nBits=32,
