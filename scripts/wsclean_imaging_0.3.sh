@@ -7,28 +7,30 @@ MS=$1
 wsclean \
 -no-update-model-required \
 -minuv-l 80.0 \
--size 800 800 \
+-size 750 750 \
 -reorder \
 -weight briggs -1.5 \
--parallel-reordering 4 \
--mgain 0.8 \
+-parallel-reordering 6 \
+-mgain 0.6 \
 -data-column DATA \
--channels-out 96 \
+-channels-out 125 \
 -parallel-deconvolution 1024 \
 -parallel-gridding 6 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
 -multiscale \
--multiscale-scale-bias 0.75 \
+-multiscale-scale-bias 0.7 \
 -multiscale-max-scales 8 \
 -pol iv \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
--name pol \
--scale 0.075arcsec \
+-name 0.3arcsec \
+-scale 0.1arcsec \
 -join-channels \
 -nmiter 12 \
 -niter 100000 \
+-beam-size 0.3 \
+-taper-gaussian 0.25asec \
 ${MS}
 
 breizorro --make-binary --fill-holes --threshold=4 --restored-image=pol-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
@@ -37,28 +39,33 @@ breizorro --make-binary --fill-holes --threshold=4 --restored-image=pol-MFS-I-im
 wsclean \
 -no-update-model-required \
 -minuv-l 80.0 \
--size 800 800 \
+-size 750 750 \
 -reorder \
 -weight briggs -1.5 \
--parallel-reordering 4 \
--mgain 0.8 \
+-parallel-reordering 6 \
+-mgain 0.6 \
 -data-column DATA \
--channels-out 96 \
+-channels-out 125 \
 -parallel-deconvolution 1024 \
 -parallel-gridding 6 \
 -auto-mask 2.5 \
 -auto-threshold 0.5 \
 -fits-mask pol.mask.fits \
 -pol qu \
+-no-mf-weighting \
+-fit-rm \
+-beam-size 0.3 \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
--name pol \
--scale 0.075arcsec \
+-name 0.3arcsec \
+-scale 0.1arcsec \
 -join-polarizations \
 -join-channels \
 -squared-channel-joining \
 -nmiter 12 \
--niter 5000 \
+-niter 10000 \
+-taper-gaussian 0.25asec \
+
 ${MS}
 
 # Cleanup

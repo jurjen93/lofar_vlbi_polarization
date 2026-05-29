@@ -68,10 +68,12 @@ def do_RMsynt(q_images: list = None,
               nBits=32,
               verbose=False)
 
+    cleanthreshold = nanmedian(rms)/2
+
     cleanFDF, ccArr, iterCountArr, residFDF, header = run_rmclean(
             output_prefix + 'FDF_tot_dirty.fits',
             output_prefix + 'RMSF_tot.fits',
-            nanmedian(rms),
+            cleanthreshold,
             maxIter=1000,
             gain=0.1,
             nBits=32,
