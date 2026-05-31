@@ -23,7 +23,22 @@ def findrms(mIn, maskSup=1e-7):
 
 def clipped_median(data, sigma_clip=3.0, max_iter=5):
     """
-    Calculate the clipped median of an 1D array.
+    Compute the sigma-clipped median of a one-dimensional array.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        One-dimensional array containing the data values.
+
+    sigma_clip : float, optional
+        Clipping threshold in units of the standard deviation.
+    max_iter : int, optional
+        Maximum number of sigma-clipping iterations. Default is 5.
+
+    Returns
+    -------
+    float
+        Sigma-clipped median of the input data.
     """
     data = data[np.isfinite(data)]  # Remove NaN and Inf values
     for _ in range(max_iter):

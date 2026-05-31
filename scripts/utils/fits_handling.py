@@ -18,7 +18,7 @@ def get_header(fits_file):
         return hdul[0].header
 
 
-def make_freq_vec(Ifits_files):
+def make_freq_vec(fits_files):
     """
     Make frequency vector
     Args:
@@ -27,9 +27,9 @@ def make_freq_vec(Ifits_files):
     Returns: frequency vector
     """
 
-    print('Number of freqs', len(Ifits_files))
-    freqvec = np.zeros((len(Ifits_files)))
-    for image_idx, image in enumerate(Ifits_files):
+    print('Number of freqs', len(fits_files))
+    freqvec = np.zeros((len(fits_files)))
+    for image_idx, image in enumerate(fits_files):
         with fits.open(image) as hdul:
             header = hdul[0].header
             freqvec[image_idx] = header['CRVAL3']
@@ -37,24 +37,24 @@ def make_freq_vec(Ifits_files):
     return freqvec
 
 
-def make_image_cube(Ifits_files, return_noise=False):
+def make_image_cube(fits_files, return_noise=False):
     """
     Make image cube
     Args:
-        Ifits_files: Stokes I fits files
+        fits_files: FITS files
         noise: Return noise array
 
     Returns: Cube, noise_array (optional)
     """
 
-    with fits.open(Ifits_files[0]) as hdul:
+    with fits.open(fits_files[0]) as hdul:
         template = np.squeeze(hdul[0].data)
 
-    cube = np.zeros((len(Ifits_files), template.shape[0], template.shape[0]))  # freq axis first (RMtools wants this)
-    noise_array = np.zeros((len(Ifits_files)))
+    cube = np.zeros((len(fits_files), template.shape[0], template.shape[0]))  # freq axis first (RMtools wants this)
+    noise_array = np.zeros((len(fits_files)))
     print(cube.shape, noise_array.shape)
 
-    for image_idx, image in enumerate(Ifits_files):
+    for image_idx, image in enumerate(fits_files):
         print(image)
         with fits.open(image) as hdul:
             cube[image_idx, :, :] = np.squeeze(hdul[0].data)
@@ -67,7 +67,20 @@ def make_image_cube(Ifits_files, return_noise=False):
 
 
 def flatten(f):
-    """ Flatten a fits file so that it becomes a 2D image. Return new header and data """
+    """
+    Flatten a FITS image cube to a two-dimensional image.
+
+    Parameters
+    ----------
+    f : astropy.io.fits.HDUList
+        Open FITS file containing the image data to be flattened.
+
+    Returns
+    -------
+    astropy.io.fits.PrimaryHDU
+        A new 2D FITS primary HDU containing the flattened image and a
+        corresponding 2D WCS header.
+    """
 
     naxis = f[0].header['NAXIS']
     if naxis == 2:
@@ -102,18 +115,18 @@ def flatten(f):
     return hdu
 
 
-def make_noise_vec(Ifits_files):
+def make_noise_vec(fits_files):
     """
     Make noise vector
 
     Args:
-        Ifits_files: Stokes I fits files
+        fits_files: FITS files
 
     Returns: Noise array
 
     """
-    noise_array = np.zeros((len(Ifits_files)))
-    for image_idx, image in enumerate(Ifits_files):
+    noise_array = np.zeros((len(fits_files)))
+    for image_idx, image in enumerate(fits_files):
         print(image)
         hdul = fits.open(image)
         if np.isfinite(np.mean(np.squeeze(hdul[0].data))):
@@ -123,3 +136,31 @@ def make_noise_vec(Ifits_files):
         hdul.close()
     return noise_array
 
+
+def remove_bad_fits(fits_files):
+    """
+    Filter a list of FITS files, keeping only those whose primary image
+    data contain finite values.
+
+    Parameters
+    ----------
+    fits_files : list of str
+        List of paths to FITS files to validate.
+
+    Returns
+    -------
+    list of str
+        List of FITS file paths that contain only finite values in the
+        primary HDU data.
+    """
+    goodfits = []
+
+    for fitsfile in fits_files:
+        try:
+            with fits.open(fitsfile, memmap=True) as hdul:
+                if np.isfinite(hdul[0].data).all():
+                    goodfits.append(fitsfile)
+                else:
+                    print(f"Removing bad FITS file: {fitsfile}")
+        except Exception as e:
+            print(f"Removing unreadable FITS file: {fitsfile} ({e})")

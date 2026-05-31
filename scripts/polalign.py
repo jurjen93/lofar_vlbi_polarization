@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 from glob import glob
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 import scipy.optimize
 import pandas as pd
@@ -17,6 +16,13 @@ from utils.fits_handling import flatten, make_freq_vec, make_noise_vec
 from utils.RM_functions import functionRM, functionRMdepol, function_synch_simple, make_P
 from utils.parsing import extract_l_number
 from pol_phase_rot import PhaseRotate
+
+
+# Define your desired font
+font_name = "Serif"  # Change this to your desired font name
+
+# Update Matplotlib font configuration
+plt.rcParams['font.family'] = font_name
 
 
 def get_nbeams_region(filename: str = None, ds9region: str = None):
