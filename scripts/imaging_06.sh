@@ -7,7 +7,7 @@ MS=$1
 wsclean \
 -no-update-model-required \
 -minuv-l 80.0 \
--size 375 375 \
+-size 512 512 \
 -reorder \
 -weight briggs -1.5 \
 -parallel-reordering 6 \
@@ -33,19 +33,19 @@ wsclean \
 -taper-gaussian 0.5asec \
 ${MS}
 
-breizorro --make-binary --fill-holes --threshold=4 --restored-image=pol-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
+breizorro --make-binary --fill-holes --threshold=3 --restored-image=pol-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
 
 # Stokes QU imaging
 wsclean \
 -no-update-model-required \
 -minuv-l 80.0 \
--size 375 375 \
+-size 512 512 \
 -reorder \
--weight briggs -1.5 \
+-weight briggs -0.5 \
 -parallel-reordering 6 \
 -mgain 0.6 \
 -data-column DATA \
--channels-out 125 \
+-channels-out 250 \
 -parallel-deconvolution 1024 \
 -parallel-gridding 6 \
 -auto-mask 2.5 \
@@ -58,14 +58,13 @@ wsclean \
 -gridder wgridder \
 -wgridder-accuracy 0.0001 \
 -name 0.6arcsec \
--scale 0.2arcsec \
+-scale 0.15arcsec \
 -join-polarizations \
 -join-channels \
 -squared-channel-joining \
 -nmiter 12 \
 -niter 10000 \
 -taper-gaussian 0.5asec \
-
 ${MS}
 
 # Cleanup
