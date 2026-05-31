@@ -105,7 +105,7 @@ def parse_args():
     parser.add_argument('--dphi', help='Delta phi', type=float, default=0.2)
     parser.add_argument('--phi_max', help='Phi maximum', type=float, default=60.)
     parser.add_argument('--prefix', help='Output prefix', type=str, default="RMsynth")
-    parser.add_argument('--clean_threshold', help='Cleaning threshold', type=float, default=5e-5)
+    parser.add_argument('--clean_threshold', help='Cleaning threshold', type=float)
     return parser.parse_args()
 
 
