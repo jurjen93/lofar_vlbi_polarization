@@ -27,14 +27,13 @@ def make_freq_vec(fits_files):
     Returns: frequency vector
     """
 
-    print('Number of freqs', len(fits_files))
+    print('Number of channels', len(fits_files))
     freqvec = np.zeros((len(fits_files)))
     for image_idx, image in enumerate(fits_files):
         with fits.open(image) as hdul:
             header = hdul[0].header
             freqvec[image_idx] = header['CRVAL3']
-    print('Frequencies:', freqvec)
-    return freqvec
+    return sorted(freqvec)
 
 
 def make_image_cube(fits_files, return_noise=False):

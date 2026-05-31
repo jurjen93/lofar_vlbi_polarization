@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from glob import glob
-from numpy import nan, sqrt
+from numpy import nan, sqrt, nanmedian
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
@@ -43,7 +43,7 @@ def do_RMsynt(i_images: list = None,
     # Noise vector (take average of Q and U noises)
     rms = 0.5 * (rms_u + rms_q)
     if clean_threshold is None:
-        clean_threshold = rms/sqrt(len(rms))
+        clean_threshold = nanmedian(rms)/sqrt(len(rms))
         print(f"Calculated clean_threshold: {clean_threshold} Jy/beam")
 
     data_arr = run_rmsynth(q_data,
