@@ -164,3 +164,4 @@ def remove_bad_fits(fits_files):
                     print(f"Removing bad FITS file: {fitsfile}")
         except Exception as e:
             print(f"Removing unreadable FITS file: {fitsfile} ({e})")
+    return goodfits
