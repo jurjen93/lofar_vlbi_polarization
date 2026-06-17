@@ -9,9 +9,9 @@ wsclean \
 -minuv-l 80.0 \
 -size 1024 1024 \
 -reorder \
--weight briggs -0.5 \
+-weight briggs -0.3 \
 -parallel-reordering 6 \
--mgain 0.6 \
+-mgain 0.7 \
 -data-column DATA \
 -channels-out 250 \
 -parallel-deconvolution 1024 \
@@ -28,7 +28,7 @@ wsclean \
 -scale 0.075arcsec \
 -join-channels \
 -nmiter 12 \
--niter 150000 \
+-niter 50000 \
 -beam-size 0.3 \
 -taper-gaussian 0.25asec \
 ${MS}
@@ -41,7 +41,7 @@ wsclean \
 -minuv-l 80.0 \
 -size 1024 1024 \
 -reorder \
--weight briggs -0.5 \
+-weight briggs 0.6 \
 -parallel-reordering 6 \
 -mgain 0.6 \
 -data-column DATA \
