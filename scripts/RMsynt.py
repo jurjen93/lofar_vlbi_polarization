@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from glob import glob
-from numpy import nan, sqrt, nanmedian, any, isnan
+import numpy as np
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
@@ -42,7 +42,7 @@ def do_RMsynt(i_images: list = None,
     q_data, rms_q = make_image_cube(sorted(remove_bad_fits(q_images)), return_noise=True)
 
     # NaN filtering
-    valid = ~any(isnan(u_data), axis=(1, 2)) & ~any(isnan(q_data), axis=(1, 2))
+    valid = ~np.any(np.isnan(u_data), axis=(1, 2)) & ~np.any(np.isnan(q_data), axis=(1, 2))
     u_data = u_data[valid]
     q_data = q_data[valid]
     rms_u = rms_u[valid]
@@ -51,7 +51,7 @@ def do_RMsynt(i_images: list = None,
     # Noise vector (take average of Q and U noises)
     rms = 0.5 * (rms_u + rms_q)
     if clean_threshold is None:
-        clean_threshold = nanmedian(rms)/sqrt(len(rms))
+        clean_threshold = np.nanmedian(rms)/np.sqrt(len(rms))
         print(f"Calculated clean_threshold: {clean_threshold} Jy/beam")
 
     data_arr = run_rmsynth(q_data,
@@ -90,7 +90,7 @@ def do_RMsynt(i_images: list = None,
             chunksize=100,
             verbose=True,
             log=print,
-            window=nan,
+            window=np.nan,
         )
 
         writefits_clean(clean_fdf,
