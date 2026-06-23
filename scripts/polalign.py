@@ -18,6 +18,16 @@ font_name = "Serif"  # Change this to your desired font name
 # Update Matplotlib font configuration
 plt.rcParams['font.family'] = font_name
 
+plt.rcParams.update({
+    "font.size": 16,          # base font size
+    "axes.labelsize": 16,     # axis labels
+    "axes.titlesize": 16,     # titles
+    "xtick.labelsize": 16,    # x tick labels
+    "ytick.labelsize": 16,    # y tick labels
+    "legend.fontsize": 16,    # legend text
+    "legend.title_fontsize": 16
+})
+
 
 def phase_rot(ms_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
     """
@@ -57,9 +67,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     u_fits = sorted(u_fits)
     q_fits = sorted(q_fits)
 
-    # Future update?
-    lambdaref2 = get_lambda2(i_fits)
-
     if len(i_fits)==0 and len(u_fits)==0 and len(q_fits)==0:
         sys.exit("ERROR: No images selected/found")
 
@@ -75,15 +82,12 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     freqvec, freqvec_MHz, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U = [a[mask][sort_idx] for a in arrays]
     wav = c.value / freqvec
 
-    # Recompute I model after cleaning
-    A0 = np.nanmax(Iflux)
-    alpha0 = -1.0  # safe physical default
-
+    # Fit Stokes-I
     fitI, pcov_I = scipy.optimize.curve_fit(
         function_synch_simple,
         freqvec,
         Iflux,
-        p0=[A0, alpha0],
+        p0=[np.nanmax(Iflux), -1.0],
         sigma=sigma_I,
         maxfev=100000
     )
@@ -95,22 +99,16 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     u = Uflux / Imodel
     P = q + 1j * u
 
-    # Lambda^2 (CRITICAL)
+    # Lambda^2
     lambda2 = (c.value / freqvec) ** 2
-    lambdaref2 = np.mean(lambda2)
+    lambdaref2 = np.median(lambda2)
 
-    # Polarisation angle
-    chi = 0.5 * np.arctan2(u, q)
-    chi = np.unwrap(2.0 * chi) / 2.0
-
-    # --- ROBUST RM ESTIMATE (NO GUESSING) ---
+    # RM ESTIMATE
     rm_grid = np.arange(-2000, 2000, 1.0)
-
     fdf = np.array([
         np.abs(np.sum(P * np.exp(-2j * rm * lambda2)))
         for rm in rm_grid
     ])
-
     rm_init = rm_grid[np.argmax(fdf)]
 
     print(f"RM synthesis peak: {rm_init:.3f} rad/m^2")
@@ -118,9 +116,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     # crude chi0 estimate from best RM
     chi0_init = 0.0
 
-    # -----------------------------
-    # QU FIT (REFINEMENT ONLY)
-    # -----------------------------
+    # Fit Stokes-QU
     p0 = np.median(np.abs(P))
 
     x0_QU_depol = np.array([
@@ -164,69 +160,79 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     Qmodel = pol_model * np.cos(phase)
     Umodel = pol_model * np.sin(phase)
     panels = [
-        ("Stokes I", Iflux, sigma_I, function_synch_simple(freqvec_MHz, *fitI, freq_ref=150.)),
+        ("Stokes I", Iflux, sigma_I,
+         function_synch_simple(freqvec_MHz, *fitI, freq_ref=150.)),
         ("Stokes Q", Qflux, sigma_Q, Qmodel),
         ("Stokes U", Uflux, sigma_U, Umodel),
     ]
+
     fig, axes = plt.subplots(3, 1, figsize=(12, 11.25))
     for ax, (title, flux, sigma, model) in zip(axes, panels):
-        ax.errorbar(lam2, flux, yerr=sigma, linestyle="", marker="s", color='black', markersize=5)
-        ax.plot(lam2, model, color='darkred', linestyle='--', label=f'{title} fit')
+        ax.errorbar(lam2, flux, yerr=sigma,
+                    linestyle="", marker="s",
+                    color='black', markersize=5)
+        ax.plot(lam2, model,
+                color='darkred', linestyle='--',
+                label=f'{title} fit')
+
         ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
         ax.set_ylabel('Flux [Jy]')
         ax.set_title(title)
+        ax.legend()
     plt.tight_layout()
-    plt.savefig(f"StokesIQU_wav2.png")
+    plt.savefig("StokesIQU_wav2.png")
     plt.close()
 
     # --- Plot Polarization Angle ---
     polangle = 0.5 * np.arctan2(Uflux, Qflux)
+    den = Uflux ** 2 + Qflux ** 2
     polangle_sigma = 0.5 * np.sqrt(
-        ((sigma_U ** 2) * (Qflux ** 2) + (sigma_Q ** 2) * (Uflux ** 2)) / (Uflux ** 2 + Qflux ** 2) ** 2)
-
-    fig, ax = plt.subplots(figsize=(8 * 1.5, 6 * 1.25))
-    ax.errorbar(lam2, polangle, yerr=polangle_sigma, linestyle="", marker="o", color='black',
-                label='Polarization angle')
-    ax.plot(lam2, 0.5 * np.arctan2(Umodel, Qmodel), color='darkred', linestyle='--', label='Model fit')
+        ((sigma_U ** 2) * Qflux ** 2 + (sigma_Q ** 2) * Uflux ** 2) / den ** 2
+    )
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax.errorbar(lam2, polangle, yerr=polangle_sigma,
+                linestyle="", marker="o",
+                color='black',
+                label='Data')
+    ax.plot(lam2, 0.5 * np.arctan2(Umodel, Qmodel),
+            color='darkred', linestyle='--',
+            label='Model')
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
-    ax.set_ylabel('Polarization angle [rad]')
+    ax.set_ylabel('Polarisation angle [rad]')
     ax.set_ylim(-0.5 * np.pi, 0.5 * np.pi)
     ax.legend()
     plt.tight_layout()
-    plt.savefig('polangle.png')
+    plt.savefig("polangle.png")
     plt.close()
 
     # --- Plot Polarization Percentage ---
-    P = make_P(Qflux, Uflux, sigma_Q, sigma_U) / Iflux
-    pfracion_sigma = np.sqrt(
-        (sigma_I ** 2) * (Qflux ** 2 + Uflux ** 2) ** 2 +
-        (Iflux ** 2) * ((sigma_Q ** 2) * (Qflux ** 2) + (sigma_U ** 2) * (Uflux ** 2))
-    ) / (Iflux ** 2 * np.sqrt(Uflux ** 2 + Qflux ** 2))
+    P = (Qflux + 1j * Uflux) / Iflux
+    P_amp = np.abs(P)
 
-    fig, ax = plt.subplots(figsize=(8 * 1.5, 6 * 1.25))
-    ax.errorbar(freqvec[P > 0] / 1e6, 100. * P[P > 0], yerr=100. * pfracion_sigma[P > 0],
-                linestyle="", marker="s", color='black', label='Polarization fraction')
-    ax.errorbar(freqvec[P == 0] / 1e6, 100. * P[P == 0], yerr=100. * pfracion_sigma[P == 0],
-                linestyle="", marker="s", color='black', lolims=True)
-    ax.plot(freqvec_MHz, 100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel, color='darkred', linestyle='--',
-            label='Model fit')
+    sigma_P = np.sqrt(
+        (sigma_Q ** 2 + sigma_U ** 2) / Iflux ** 2
+    )
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax.errorbar(freqvec_MHz, 100 * P_amp,
+                yerr=100 * sigma_P,
+                linestyle="", marker="s",
+                color='black',
+                label='Polarisation fraction')
+
+    ax.plot(freqvec_MHz,
+            np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel,
+            color='darkred',
+            linestyle='--',
+            label='Model')
+    
     ax.set_xlabel('Frequency [MHz]')
-    ax.set_ylabel('Polarization percentage')
-    ax.set_ylim(-1, 10)
+    ax.set_ylabel('Polarisation percentage')
     ax.legend()
     plt.tight_layout()
-    plt.savefig('polfrac.png')
+    plt.savefig("polfrac.png")
     plt.close()
 
     ####################
-
-    # RM , chi0, lambda ref
-    print(fitstr)
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print(f"RM: {fitQU_depol[1]}")
-    print(f"chi0: {fitQU_depol[2]}")
-    print(r"$\lambda$ (reference): "+str(round(lambdaref2, 2)))
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 
     return fitQU_depol[1], fitQU_depol[2], lambdaref2
 
