@@ -8,11 +8,7 @@ import matplotlib.pyplot as plt
 import scipy.optimize
 import pandas as pd
 
-from astropy.io import fits
-from astropy import units as u
-import pyregion
-
-from utils.fits_handling import flatten, make_freq_vec, make_noise_vec
+from utils.image_handling import getallfluxes
 from utils.RM_functions import functionRM, functionRMdepol, function_synch_simple, make_P
 from utils.parsing import extract_l_number
 from pol_phase_rot import PhaseRotate
@@ -23,109 +19,6 @@ font_name = "Serif"  # Change this to your desired font name
 
 # Update Matplotlib font configuration
 plt.rcParams['font.family'] = font_name
-
-
-def get_nbeams_region(filename: str = None, ds9region: str = None):
-    """
-    Get number of beams in region file
-    Args:
-        filename: Input file name
-        ds9region: ds9 region file
-
-    Returns: Number of beams
-    """
-
-    with fits.open(filename) as hdu:
-        hduflat = flatten(hdu)
-        header = hduflat.header
-
-        r = pyregion.open(ds9region)
-        manualmask = r.get_mask(hdu=hduflat)
-        image = np.copy(hdu[0].data[0][0])
-        image[np.where(manualmask == False)] = 0.0
-        image[np.where(manualmask == True)] = 1.0
-        # print('number of pixels', np.sum(image))
-        n_beam = np.sum(image) / ((header['BMAJ'] / header['CDELT2']) * (header['BMIN'] / header['CDELT2']) * np.pi / 4.)
-        print('n_beam', n_beam)
-        return n_beam
-
-
-def getflux(filename: str = None, ds9region: str = None):
-    """
-    Gef flux from fits file
-    Args:
-        filename: Input file name
-        ds9region: DS9 region file
-
-    Returns: Flux density
-    """
-
-    with fits.open(filename) as hdu:
-        hduflat = flatten(hdu)
-
-        header = hduflat.header
-
-        bmaj = header['BMAJ'] * u.deg  # Major axis of the beam in degrees
-        bmin = header['BMIN'] * u.deg  # Minor axis of the beam in degrees
-        beam_area = (bmaj * bmin * np.pi / (4 * np.log(2))).to(u.steradian)
-        cdelt1 = abs(header['CDELT1']) * u.deg  # Pixel size in degrees along axis 1
-        cdelt2 = abs(header['CDELT2']) * u.deg  # Pixel size in degrees along axis 2
-        pixel_area = (cdelt1 * cdelt2).to(u.steradian)
-        conversion_factor = beam_area / pixel_area
-
-        r = pyregion.open(ds9region)
-        manualmask = r.get_mask(hdu=hduflat)
-        hdu[0].data[0][0][np.where(manualmask == False)] = 0.0
-
-        return np.sum(hdu[0].data) / conversion_factor
-
-
-def getallfluxes(Ifiles: list = None, Qfiles: list = None, Ufiles: list = None, ds9region: str = None):
-    """
-    Gef fluxes from Stokes files
-    Args:
-        Ifiles: Stokes I file names
-        Qfiles: Stokes Q file names
-        Ufiles: Stokes U file names
-        ds9region: DS9 region file
-
-    Returns: Frequency vector, Stokes I flux, Stokes Q flux, Stokes U flux, Sigma Stokes I, Sigma Stokes Q, Sigma Stokes U
-    """
-
-    n_beams = get_nbeams_region(Qfiles[0], ds9region)
-    freqvec = make_freq_vec(Qfiles)
-    Iflux = np.zeros((len(Qfiles)))
-    Qflux = np.zeros((len(Qfiles)))
-    Uflux = np.zeros((len(Qfiles)))
-
-    sigma_I = make_noise_vec(Ifiles)
-    sigma_Q = make_noise_vec(Qfiles)
-    sigma_U = make_noise_vec(Ufiles)
-
-    for image_idx, image in enumerate(Ifiles):
-        Iflux[image_idx] = getflux(image, ds9region)
-        print('I Flux:', Iflux[image_idx])
-    for image_idx, image in enumerate(Qfiles):
-        Qflux[image_idx] = getflux(image, ds9region)
-        print('Q Flux:', Qflux[image_idx])
-    for image_idx, image in enumerate(Ufiles):
-        Uflux[image_idx] = getflux(image, ds9region)
-        print('U Flux:', Uflux[image_idx])
-
-    freqvec = freqvec[~np.isnan(Iflux)]
-    Qflux = Qflux[~np.isnan(Iflux)]
-    Uflux = Uflux[~np.isnan(Iflux)]
-
-    sigma_I = sigma_I[~np.isnan(Iflux)]
-    sigma_Q = sigma_Q[~np.isnan(Iflux)]
-    sigma_U = sigma_U[~np.isnan(Iflux)]
-    Iflux = Iflux[~np.isnan(Iflux)]  # do this last, otherwise previous steps go wrong
-
-    sigma_I = sigma_I * np.sqrt(n_beams)
-    sigma_Q = sigma_Q * np.sqrt(n_beams)
-    sigma_U = sigma_U * np.sqrt(n_beams)
-
-    return freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U
 
 
 def phase_rot(ms_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
@@ -188,8 +81,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     idx = np.where(chisq > 2.5 * np.std(chisq))  # use emperical noise on chisq distribution
     idx_incl = np.where(chisq <= 2.5 * np.std(chisq))
 
-    plt.plot(freqvec[idx] / 1e6, Iflux[idx], linestyle="", marker="x", markersize=12., label='removed: bad Stokes I',
-             color='red')
+    plt.plot(freqvec[idx] / 1e6, Iflux[idx], linestyle="", marker="x", markersize=12., label='removed: bad Stokes I', color='red')
     plt.errorbar(freqvec / 1e6, Iflux, yerr=sigma_I, linestyle="", marker="o", label='Stokes I', color='black')
 
     # keep only good values, remove flagged ones based on bad chisq Stokes I fit
@@ -280,12 +172,10 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
         round(fitQU_depol_err[3], 3)) + r' [rad$^{2}$ m$^{-4}$];  $p_0=$' + str(
         round(fitQU_depol[0], 3)) + r'$\pm$' + str(round(fitQU_depol_err[0], 3))
 
-    plt.plot(freqvec / 1e6, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='black',
-             label='Stokes I fit')
+    plt.plot(freqvec / 1e6, function_synch_simple(freqvec / 1e6, fitI[0], fitI[1], freq_ref=150.), color='black', label='Stokes I fit')
     plt.errorbar(freqvec / 1e6, Qflux, yerr=sigma_Q, linestyle="", marker="o", label='Stokes Q', color='blue')
     plt.errorbar(freqvec / 1e6, Uflux, yerr=sigma_U, linestyle="", marker="o", label='Stokes U', color='purple')
-    plt.plot(freqvec / 1e6, make_P(Qflux, Uflux, sigma_Q, sigma_U), linestyle="", marker="o", label='Stokes P',
-             color='grey')
+    plt.plot(freqvec / 1e6, make_P(Qflux, Uflux, sigma_Q, sigma_U), linestyle="", marker="o", label='Stokes P', color='grey')
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('Flux [Jy]')
     plt.title(L)
@@ -319,8 +209,7 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
 
     # --- Plot Stokes U ---
     plt.subplot(3, 1, 3)
-    plt.errorbar(wav ** 2, Uflux, yerr=sigma_U,
-        linestyle="", marker="s", label='Stokes U', color='black', markersize=5)
+    plt.errorbar(wav ** 2, Uflux, yerr=sigma_U, linestyle="", marker="s", label='Stokes U', color='black', markersize=5)
     plt.plot(wav ** 2,
         Imodel * fitQU_depol[0] *
         np.sin(2 * (fitQU_depol[1] * (wav ** 2 - lambdaref2) + fitQU_depol[2])) *
@@ -335,15 +224,12 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     plt.savefig(f"{L}_StokesIQU_wav2.png")
     plt.close()
 
-
     # --- Plot Polarization Angle ---
     plt.figure(figsize=(8 * 1.5, 6 * 1.25))
     plt.subplot(2, 1, 1)
-    polangle_sigma = 0.5 * np.sqrt((((sigma_U ** 2) * (Qflux ** 2)) + ((sigma_Q ** 2) * (Uflux ** 2))) / (
-                (Uflux ** 2 + Qflux ** 2) ** 2))  # https://astro.subhashbose.com/tools/error-propagation-calculator
+    polangle_sigma = 0.5 * np.sqrt((((sigma_U ** 2) * (Qflux ** 2)) + ((sigma_Q ** 2) * (Uflux ** 2))) / ((Uflux ** 2 + Qflux ** 2) ** 2))
     polangle = 0.5 * np.arctan2(Uflux, Qflux)
-    plt.errorbar(wav ** 2, polangle, yerr=polangle_sigma, linestyle="", marker="o", color='black',
-                 label='polarization angle')
+    plt.errorbar(wav ** 2, polangle, yerr=polangle_sigma, linestyle="", marker="o", color='black', label='polarization angle')
     print(fitQU_depol[0], fitQU_depol[1], fitQU_depol[2], fitQU_depol[3])
 
     Qmodel = Imodel * fitQU_depol[0] * np.cos(
@@ -381,19 +267,15 @@ def find_RMandoffets(i_fits: list = None, u_fits: list = None, q_fits: list = No
     # RM , offset, lambda ref, L-number
     print(fitstr)
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print(f"RM: {fitQU_depol[1]}")
     print(f"offset: {fitQU_depol[2]}")
     print(f"$\lambda$ (reference): {lambdaref2}")
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 
     return fitQU_depol[1], fitQU_depol[2], lambdaref2, L
 
 
-def get_phase_rot(RM, offset, input_ms=None, ref_RM=6.30423201, ref_offset=0.8701224377970226, lambdaref2=None, L=None):
+def get_phase_rot(RM, offset, input_ms=None, ref_RM=None, ref_offset=None, lambdaref2=None, L=None):
     """
     Get phase rotation h5parm
     """
@@ -404,13 +286,9 @@ def get_phase_rot(RM, offset, input_ms=None, ref_RM=6.30423201, ref_offset=0.870
     print(offset - ref_offset)
 
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('-----INPUT pol_phase_rot.py------')
     print('RM:       ', 2. * delta_RM)
     print('intercept:', 2. * (delta_offset - (delta_RM * lambdaref2)))
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 
     if input_ms is not None:

@@ -33,7 +33,7 @@ wsclean \
 -taper-gaussian 0.25asec \
 ${MS}
 
-breizorro --make-binary --fill-holes --threshold=3 --restored-image=pol-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
+breizorro --make-binary --fill-holes --threshold=3 --restored-image=0.3arcsec-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
 
 # Stokes QU imaging
 wsclean \

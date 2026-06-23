@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from glob import glob
-from numpy import nan, sqrt, nanmedian
+from numpy import nan, sqrt, nanmedian, any, isnan
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
@@ -16,7 +16,8 @@ def do_RMsynt(i_images: list = None,
               output_directory: str = './',
               dphi: float = None,
               phi_max: float = None,
-              clean_threshold: float = None):
+              clean_threshold: float = None,
+              do_rmclean: bool = False,):
     """
     Perform RM synthesis
     Args:
@@ -39,6 +40,13 @@ def do_RMsynt(i_images: list = None,
     i_data = None # Something to improve?
     u_data, rms_u = make_image_cube(sorted(remove_bad_fits(u_images)), return_noise=True)
     q_data, rms_q = make_image_cube(sorted(remove_bad_fits(q_images)), return_noise=True)
+
+    # NaN filtering
+    valid = ~any(isnan(u_data), axis=(1, 2)) & ~any(isnan(q_data), axis=(1, 2))
+    u_data = u_data[valid]
+    q_data = q_data[valid]
+    rms_u = rms_u[valid]
+    rms_q = rms_q[valid]
 
     # Noise vector (take average of Q and U noises)
     rms = 0.5 * (rms_u + rms_q)
@@ -70,42 +78,44 @@ def do_RMsynt(i_images: list = None,
               nBits=32,
               verbose=False)
 
-    clean_fdf, cc_arr, iter_count_arr, resid_fdf, header = run_rmclean(
-        output_prefix + 'FDF_tot_dirty.fits',
-        output_prefix + 'RMSF_tot.fits',
-        clean_threshold,
-        gain=0.08,
-        maxIter=5000,
-        nBits=32,
-        pool=pool,
-        chunksize=100,
-        verbose=True,
-        log=print,
-        window=nan,
-    )
+    if do_rmclean:
+        clean_fdf, cc_arr, iter_count_arr, resid_fdf, header = run_rmclean(
+            output_prefix + 'FDF_tot_dirty.fits',
+            output_prefix + 'RMSF_tot.fits',
+            clean_threshold,
+            gain=0.08,
+            maxIter=3000,
+            nBits=32,
+            pool=pool,
+            chunksize=100,
+            verbose=True,
+            log=print,
+            window=nan,
+        )
 
-    writefits_clean(clean_fdf,
-         cc_arr,
-         iter_count_arr,
-         resid_fdf,
-         header,
-         prefixOut=output_prefix,
-         outDir=output_directory,
-         write_separate_FDF=True,
-         nBits=32,
-         verbose=False)
+        writefits_clean(clean_fdf,
+             cc_arr,
+             iter_count_arr,
+             resid_fdf,
+             header,
+             prefixOut=output_prefix,
+             outDir=output_directory,
+             write_separate_FDF=True,
+             nBits=32,
+             verbose=False)
 
 
 def parse_args():
     """Argument parser"""
 
     parser = ArgumentParser(description='Perform RMS synthesis')
-    parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, required=True)
+    parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
-    parser.add_argument('--dphi', help='Delta phi', type=float, default=0.2)
+    parser.add_argument('--dphi', help='Delta phi', type=float, default=0.3)
     parser.add_argument('--phi_max', help='Phi maximum', type=float, default=60.)
     parser.add_argument('--prefix', help='Output prefix', type=str, default="RMsynth")
     parser.add_argument('--clean_threshold', help='Cleaning threshold', type=float)
+    parser.add_argument('--do_rmclean', action='store_true', help="Do RM Cleaning")
     return parser.parse_args()
 
 
@@ -125,7 +135,8 @@ def main():
               args.output_directory,
               args.dphi,
               args.phi_max,
-              args.clean_threshold)
+              args.clean_threshold,
+              args.do_rmclean)
 
 
 if __name__ == "__main__":
