@@ -21,7 +21,7 @@ def do_RMsynt(i_images: list = None,
     """
     Perform RM synthesis
     Args:
-        i_images: Stokes I fits images
+        i_images: Stokes I fits images (Currently not used)
         q_images: Stokes Q fits images
         u_images: Stokes U fits images
         output_prefix: Output prefix
@@ -29,6 +29,7 @@ def do_RMsynt(i_images: list = None,
         dphi: delta phi
         phi_max: phi max
         clean_threshold: cleaning threshold in Jy/beam
+        do_rmclean: perform RM cleaning
     """
 
     q_header = get_header(q_images[0])
