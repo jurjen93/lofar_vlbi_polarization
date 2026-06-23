@@ -106,8 +106,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
                                                               p0=x0_QU_depol_tmp,
                                                               sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel))
     fitQU_depol_err = np.sqrt(np.diag(pcov_QU_depol))
-    print('fitQU_depol', fitQU_depol)
-    print('fitQU_depol_err', fitQU_depol_err)
     if fitQU_depol[0] <= 0:
         print('STUCK: negative polarization fraction')
         sys.exit()
@@ -238,7 +236,7 @@ def parse_args():
     parser = ArgumentParser(description='Perform polarisation alignment for deep observations')
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
-    parser.add_argument('--region_file', help='DS9 region file on linear polarised signal', type=str, required=True)
+    parser.add_argument('--region', help='DS9 region file on linear polarised signal', type=str, required=True)
 
     # For getting alignment h5parm
     parser.add_argument('--msin', help='Input MeasurementSet with the desired time and frequency axis', type=str)
@@ -256,7 +254,7 @@ def main():
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
-    RM, chi0, lambdaref2 = fit_RM(i_fits, u_fits, q_fits, args.region_file)
+    RM, chi0, lambdaref2 = fit_RM(i_fits, u_fits, q_fits, args.region)
 
     json_filename = "rm_alignment.json"
     with open(json_filename, 'w') as file:

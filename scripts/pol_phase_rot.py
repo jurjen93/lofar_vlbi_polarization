@@ -126,10 +126,6 @@ class PhaseRotate:
                 self.update_array(st, self.freqs, 'freq')
                 self.update_array(st, self.ant, 'ant')
 
-            if not amplitudedone:
-                pass
-                # TODO: add
-
         return self
 
     def circ2lin(self):
@@ -209,7 +205,7 @@ class PhaseRotate:
                 if 'phase' in soltab:
                     st = ss._f_get_child(soltab)
                     phaseval = st.val[:]
-                    phaseval[0, :, :, 0, 0] += phaserot
+                    phaseval[0, :, :, 0, 0] += phaserot[:, np.newaxis]
                     self.update_array(st, phaseval, 'val')
         print("########################")
 
