@@ -39,8 +39,8 @@ def do_RMsynt(i_images: list = None,
 
     # Make image cubes
     i_data = None # Something to improve?
-    u_data, rms_u = make_image_cube(sorted(remove_bad_fits(u_images)), return_noise=True)
-    q_data, rms_q = make_image_cube(sorted(remove_bad_fits(q_images)), return_noise=True)
+    u_data, rms_u = make_image_cube(sorted(u_images), return_noise=True)
+    q_data, rms_q = make_image_cube(sorted(q_images), return_noise=True)
 
     # NaN filtering
     valid = ~np.any(np.isnan(u_data), axis=(1, 2)) & ~np.any(np.isnan(q_data), axis=(1, 2))
