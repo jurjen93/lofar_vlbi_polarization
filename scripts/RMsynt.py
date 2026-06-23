@@ -48,6 +48,7 @@ def do_RMsynt(i_images: list = None,
     q_data = q_data[valid]
     rms_u = rms_u[valid]
     rms_q = rms_q[valid]
+    freq_array = np.array(freq_array)[valid]
 
     # Noise vector (take average of Q and U noises)
     rms = 0.5 * (rms_u + rms_q)
