@@ -20,8 +20,8 @@ YY = RR - RL - LR + LL
 
 class PhaseRotate:
     """
-    Make template h5 with default values (phase=0 and amplitude=1) and convert to phase rotate matrix for
-    polarization alignment between different observations.
+    Make h5parm for polarization alignment between different observations
+    (see van Weeren et al. 2026; https://arxiv.org/pdf/2606.18333)
     """
 
     def __init__(self, h5_in=None, ms_in=None, h5_out=None):
@@ -92,7 +92,7 @@ class PhaseRotate:
 
     def make_template(self, shape=None, polrot=None):
         """
-        Make template h5
+        Make template h5parm
 
         :param shape: shape of values and weights solution table
         :param polrot: make rotation matrix to align polarization
@@ -207,11 +207,10 @@ class PhaseRotate:
             ss = self.h5.root._f_get_child(solset)
             for soltab in ss._v_groups.keys():
                 if 'phase' in soltab:
-                    phaseval = ss._f_get_child(soltab).val[:]
-                    # same phaserot for all antennas
-                    for ant_idx in range(phaseval.shape[2]):
-                        phaseval[0, :, ant_idx, 0, 0] += phaserot
-                    self.update_array(ss._f_get_child(soltab), phaseval, 'val')
+                    st = ss._f_get_child(soltab)
+                    phaseval = st.val[:]
+                    phaseval[0, :, :, 0, 0] += phaserot
+                    self.update_array(st, phaseval, 'val')
         print("########################")
 
         self.circ2lin()

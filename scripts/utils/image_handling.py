@@ -1,9 +1,10 @@
 import numpy as np
 from astropy.io import fits
 from astropy import units as u
+from astropy.constants import c
 import pyregion
-from .fits_handling import flatten, make_freq_vec, make_noise_vec
 
+from .fits_handling import flatten, make_freq_vec, make_noise_vec
 
 
 def clipped_median(data, sigma_clip=3.0, max_iter=5):
@@ -60,6 +61,21 @@ def get_nbeams_region(filename: str = None, ds9region: str = None):
         n_beam = np.sum(image) / ((header['BMAJ'] / header['CDELT2']) * (header['BMIN'] / header['CDELT2']) * np.pi / 4.)
         print('n_beam', n_beam)
         return n_beam
+
+
+def get_lambda2(fitsfiles):
+    """
+    Get lambda^2 from input FITS files
+    Args:
+        fitsfiles: FITS files from channel images
+
+    Returns: lambda^2
+    """
+    freqs = []
+    for fitsfile in fitsfiles:
+        with fits.open(fitsfile) as f:
+            freqs.append(f[0].header["CRVAL3"])
+    return (c.value/np.median(freqs))**2
 
 
 def getflux(filename: str = None, ds9region: str = None):
