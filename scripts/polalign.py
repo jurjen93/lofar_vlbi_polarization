@@ -105,12 +105,12 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
                                                               np.append(Qflux / Imodel, Uflux / Imodel),
                                                               p0=x0_QU_depol_tmp,
                                                               sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel))
-        fitQU_depol_err = np.sqrt(np.diag(pcov_QU_depol))
-        print('fitQU_depol', fitQU_depol)
-        print('fitQU_depol_err', fitQU_depol_err)
-        if fitQU_depol[0] <= 0:
-            print('STUCK: negative polarization fraction')
-            sys.exit()
+    fitQU_depol_err = np.sqrt(np.diag(pcov_QU_depol))
+    print('fitQU_depol', fitQU_depol)
+    print('fitQU_depol_err', fitQU_depol_err)
+    if fitQU_depol[0] <= 0:
+        print('STUCK: negative polarization fraction')
+        sys.exit()
 
     fitstr = r'fit:  RM=' + str(round(fitQU_depol[1], 3)) + r'$\pm$' + str(
         round(fitQU_depol_err[1], 3)) + r' [rad m$^{-2}$];  $\chi_{ref}=$' + str(

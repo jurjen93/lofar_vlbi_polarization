@@ -6,6 +6,10 @@ import pyregion
 
 from .fits_handling import flatten, make_freq_vec, make_noise_vec
 
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 def clipped_median(data, sigma_clip=3.0, max_iter=5):
     """
@@ -120,8 +124,7 @@ def getallfluxes(Ifiles: list = None, Qfiles: list = None, Ufiles: list = None, 
     Returns: Frequency vector, Stokes I flux, Stokes Q flux, Stokes U flux, Sigma Stokes I, Sigma Stokes Q, Sigma Stokes U
     """
 
-    if ds9region is not None:
-        n_beams = get_nbeams_region(Qfiles[0], ds9region)
+    n_beams = get_nbeams_region(Qfiles[0], ds9region)
     freqvec = make_freq_vec(Qfiles)
     Iflux = np.zeros((len(Qfiles)))
     Qflux = np.zeros((len(Qfiles)))
@@ -133,22 +136,22 @@ def getallfluxes(Ifiles: list = None, Qfiles: list = None, Ufiles: list = None, 
 
     for image_idx, image in enumerate(Ifiles):
         Iflux[image_idx] = getflux(image, ds9region)
-        print('I Flux:', Iflux[image_idx])
+        print('I Flux -->', image, Iflux[image_idx])
     for image_idx, image in enumerate(Qfiles):
         Qflux[image_idx] = getflux(image, ds9region)
-        print('Q Flux:', Qflux[image_idx])
+        print('Q Flux -->', image, Qflux[image_idx])
     for image_idx, image in enumerate(Ufiles):
         Uflux[image_idx] = getflux(image, ds9region)
-        print('U Flux:', Uflux[image_idx])
+        print('U Flux -->', image, Uflux[image_idx])
 
-    freqvec = freqvec[~np.isnan(Iflux)]
-    Qflux = Qflux[~np.isnan(Iflux)]
-    Uflux = Uflux[~np.isnan(Iflux)]
-
-    sigma_I = sigma_I[~np.isnan(Iflux)]
-    sigma_Q = sigma_Q[~np.isnan(Iflux)]
-    sigma_U = sigma_U[~np.isnan(Iflux)]
-    Iflux = Iflux[~np.isnan(Iflux)]
+    mask = ~np.isnan(Iflux)
+    freqvec = np.array(freqvec)[mask]
+    Qflux = Qflux[mask]
+    Uflux = Uflux[mask]
+    sigma_I = sigma_I[mask]
+    sigma_Q = sigma_Q[mask]
+    sigma_U = sigma_U[mask]
+    Iflux = Iflux[mask]
 
     sigma_I = sigma_I * np.sqrt(n_beams)
     sigma_Q = sigma_Q * np.sqrt(n_beams)
