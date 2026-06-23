@@ -4,7 +4,7 @@ import numpy as np
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
-from utils.fits_handling import get_header, make_freq_vec, make_image_cube, remove_bad_fits
+from utils.fits_handling import get_header, make_freq_vec, make_image_cube
 
 import multiprocessing
 pool = multiprocessing.Pool()
@@ -12,7 +12,7 @@ pool = multiprocessing.Pool()
 def do_RMsynt(i_images: list = None,
               q_images: list = None,
               u_images: list = None,
-              output_prefix: str = 'prefix',
+              output_prefix: str = 'RMsynth',
               output_directory: str = './',
               dphi: float = None,
               phi_max: float = None,

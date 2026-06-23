@@ -59,63 +59,101 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # Future update?
     lambdaref2 = get_lambda2(i_fits)
-    x0_QU_depol = np.array([0.05, 6.0, 0.9, 0.03])  # initial guess QU fitting with depol
-    x0_I = np.array([0.24, -1.1])  # initial guess Stokes I function_synch_simple
 
     if len(i_fits)==0 and len(u_fits)==0 and len(q_fits)==0:
         sys.exit("ERROR: No images selected/found")
 
     freqvec, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U = getallfluxes(i_fits, q_fits, u_fits, regionfile)
+
     # Frequency vector in MHz
     freqvec_MHz = freqvec / 1e6
 
     # Filter bad images
-    fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
-    chisq = (Iflux - function_synch_simple(freqvec, *fitI)) ** 2 / sigma_I ** 2
-    mask = (chisq <= 2.5 * np.std(chisq)) & np.isfinite(Iflux) & np.isfinite(Qflux) & np.isfinite(Uflux)
+    mask = np.isfinite(Iflux) & np.isfinite(Qflux) & np.isfinite(Uflux)
     sort_idx = np.argsort(freqvec[mask])
     arrays = [freqvec, freqvec_MHz, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U]
     freqvec, freqvec_MHz, Iflux, Qflux, Uflux, sigma_I, sigma_Q, sigma_U = [a[mask][sort_idx] for a in arrays]
     wav = c.value / freqvec
 
-    # fit I
-    fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple,
-                                            freqvec, Iflux,
-                                            p0=x0_I,
-                                            sigma=sigma_I)
+    # Recompute I model after cleaning
+    A0 = np.nanmax(Iflux)
+    alpha0 = -1.0  # safe physical default
 
-    Imodel = function_synch_simple(freqvec, fitI[0], fitI[1])
+    fitI, pcov_I = scipy.optimize.curve_fit(
+        function_synch_simple,
+        freqvec,
+        Iflux,
+        p0=[A0, alpha0],
+        sigma=sigma_I,
+        maxfev=100000
+    )
 
-    # Fit Q and U
-    fitQU_depol, pcov_QU_depol = scipy.optimize.curve_fit(functionRMdepol,
-                                                          np.append(wav, wav),
-                                                          np.append(Qflux / Imodel, Uflux / Imodel),
-                                                          p0=x0_QU_depol,
-                                                          sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel))
+    Imodel = function_synch_simple(freqvec, *fitI)
 
+    # Fractional polarisation
+    q = Qflux / Imodel
+    u = Uflux / Imodel
+    P = q + 1j * u
+
+    # Lambda^2 (CRITICAL)
+    lambda2 = (c.value / freqvec) ** 2
+    lambdaref2 = np.mean(lambda2)
+
+    # Polarisation angle
+    chi = 0.5 * np.arctan2(u, q)
+    chi = np.unwrap(2.0 * chi) / 2.0
+
+    # --- ROBUST RM ESTIMATE (NO GUESSING) ---
+    rm_grid = np.arange(-2000, 2000, 1.0)
+
+    fdf = np.array([
+        np.abs(np.sum(P * np.exp(-2j * rm * lambda2)))
+        for rm in rm_grid
+    ])
+
+    rm_init = rm_grid[np.argmax(fdf)]
+
+    print(f"RM synthesis peak: {rm_init:.3f} rad/m^2")
+
+    # crude chi0 estimate from best RM
+    chi0_init = 0.0
+
+    # -----------------------------
+    # QU FIT (REFINEMENT ONLY)
+    # -----------------------------
+    p0 = np.median(np.abs(P))
+
+    x0_QU_depol = np.array([
+        p0,  # polarisation fraction
+        rm_init,  # RM from synthesis (stable even at high RM)
+        chi0_init,  # intercept (will be refined)
+        0.03  # depolarisation term
+    ])
+
+    fitQU_depol, pcov_QU_depol = scipy.optimize.curve_fit(
+        functionRMdepol,
+        np.append(lambda2, lambda2),
+        np.append(q, u),
+        p0=x0_QU_depol,
+        sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel),
+        maxfev=300000
+    )
+
+    err = np.sqrt(np.diag(pcov_QU_depol))
+
+    # Safety check
     if fitQU_depol[0] <= 0:
-        print('WARNING: negative polarization fraction')
-        x0_QU_depol_tmp = np.copy(x0_QU_depol)
-        x0_QU_depol_tmp[0] = np.abs(fitQU_depol[0])
-        x0_QU_depol_tmp[1] = fitQU_depol[1]
-        x0_QU_depol_tmp[2] = x0_QU_depol[2] - 0.5 * np.pi
-        x0_QU_depol_tmp[3] = fitQU_depol[3]
-        fitQU_depol, pcov_QU_depol = scipy.optimize.curve_fit(functionRMdepol,
-                                                              np.append(wav, wav),
-                                                              np.append(Qflux / Imodel, Uflux / Imodel),
-                                                              p0=x0_QU_depol_tmp,
-                                                              sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel))
-    fitQU_depol_err = np.sqrt(np.diag(pcov_QU_depol))
-    if fitQU_depol[0] <= 0:
-        print('STUCK: negative polarization fraction')
-        sys.exit()
+        sys.exit("WARNING: negative polarization fraction - fitting may be unstable")
 
-    fitstr = r'fit:  RM=' + str(round(fitQU_depol[1], 3)) + r'$\pm$' + str(
-        round(fitQU_depol_err[1], 3)) + r' [rad m$^{-2}$];  $\chi_{ref}=$' + str(
-        round(fitQU_depol[2], 3)) + r'$\pm$' + str(round(fitQU_depol_err[2], 3)) + r' [rad];\n $\sigma_{RM}^{2}=$' + str(
-        round(fitQU_depol[3], 3)) + r'$\pm$' + str(
-        round(fitQU_depol_err[3], 3)) + r' [rad$^{2}$ m$^{-4}$];  $p_0=$' + str(
-        round(fitQU_depol[0], 3)) + r'$\pm$' + str(round(fitQU_depol_err[0], 3))
+    # Output string
+    fitstr = (
+        f"fit: RM={fitQU_depol[1]:.3f} ± {err[1]:.3f} rad m^-2; "
+        f"chi0={fitQU_depol[2]:.3f} ± {err[2]:.3f} rad; "
+        f"sigmaRM2={fitQU_depol[3]:.3f} ± {err[3]:.3f} rad^2 m^-4; "
+        f"p0={fitQU_depol[0]:.3f} ± {err[0]:.3f}"
+    )
+
+    print(fitstr)
 
     ##### PLOTTING #####
 
@@ -180,7 +218,9 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     plt.savefig('polfrac.png')
     plt.close()
 
-    # RM , chi0, lambda ref, L-number
+    ####################
+
+    # RM , chi0, lambda ref
     print(fitstr)
     print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print(f"RM: {fitQU_depol[1]}")
