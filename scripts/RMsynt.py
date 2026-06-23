@@ -4,7 +4,7 @@ import numpy as np
 
 from RMtools_3D.do_RMsynth_3D import run_rmsynth, writefits
 from RMtools_3D.do_RMclean_3D import run_rmclean, writefits as writefits_clean
-from .utils.fits_handling import get_header, make_freq_vec, make_image_cube, remove_bad_fits
+from utils.fits_handling import get_header, make_freq_vec, make_image_cube, remove_bad_fits
 
 import multiprocessing
 pool = multiprocessing.Pool()

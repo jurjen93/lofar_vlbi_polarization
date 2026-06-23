@@ -2,7 +2,7 @@ import numpy as np
 from astropy.io import fits
 from astropy import units as u
 import pyregion
-from fits_handling import flatten, make_freq_vec, make_noise_vec
+from .fits_handling import flatten, make_freq_vec, make_noise_vec
 
 
 
