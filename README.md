@@ -1,7 +1,7 @@
-### DEEP HIGH-RES POLARISATION WITH LOFAR
+### DEEP HIGH-RESOLUTION POLARISATION ALIGNMENT WITH LOFAR
 
-To perform deep high-resolution polarisation studies, using multiple observations of the same field of view, we need to align observations to the same RM angle.
-This requires data that has been corrected for scalar-phasediff (RR-LL) and full-Jones corrections (see [Section 3.2.3 from de Jong et al. 2024](https://arxiv.org/pdf/2407.13247)).
+To perform deep high-resolution polarisation studies, using multiple observations of the same field of view, we need to align observations to the same RM and polarisation angle.
+This can only be done with data that has been corrected for scalar-phasediff (RR-LL) and full-Jones corrections (see [Section 3.2.3 from de Jong et al. 2024](https://arxiv.org/pdf/2407.13247)).
 
 ### Steps
 
