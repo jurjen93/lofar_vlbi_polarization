@@ -131,7 +131,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     fitQU_depol, pcov_QU_depol = scipy.optimize.curve_fit(
         functionRMdepol_ref,
-        np.append(lambda2, lambda2),
+        lambda2,
         np.append(q, u),
         p0=x0_QU_depol,
         sigma=np.append(sigma_Q / Imodel, sigma_U / Imodel),
