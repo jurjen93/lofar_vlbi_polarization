@@ -90,7 +90,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
         sigma=sigma_I,
         maxfev=100000
     )
-    Imodel = function_synch_simple(freqvec, *fitI)
+    Imodel = function_synch_simple(freqvec, *fitI, freq_ref=freqref)
 
     # Fractional polarisation
     q = Qflux / Imodel
