@@ -27,6 +27,7 @@ def findrms(mIn, maskSup=1e-7):
 def get_header(fits_file):
     """
     Get FITS header
+
     Args:
         fits_file: FITS file name
 
@@ -40,6 +41,7 @@ def get_header(fits_file):
 def make_freq_vec(fits_files):
     """
     Make frequency vector
+
     Args:
         Ifits_files: Stokes I fits files
 
@@ -58,6 +60,7 @@ def make_freq_vec(fits_files):
 def make_image_cube(fits_files, return_noise=False):
     """
     Make image cube
+
     Args:
         fits_files: FITS files
         noise: Return noise array

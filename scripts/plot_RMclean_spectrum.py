@@ -5,16 +5,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyregion
 from astropy.io import fits
-from astropy.wcs import WCS
 
 from utils.fits_handling import flatten
 from utils.image_handling import clipped_median
 
-# Define your desired font
-font_name = "Serif"  # Change this to your desired font name
-
-# Update Matplotlib font configuration
-plt.rcParams['font.family'] = font_name
+plt.rcParams.update({
+    "font.family": "Serif",
+    "font.size": 12,
+    "axes.labelsize": 12,
+    "axes.titlesize": 12,
+    "xtick.labelsize": 12,
+    "ytick.labelsize": 12,
+    "legend.fontsize": 12,
+    "legend.title_fontsize": 12
+})
 
 
 def extract_rm_spectrum(fitscube, ds9_regionfile):
@@ -56,7 +60,6 @@ def extract_rm_spectrum(fitscube, ds9_regionfile):
     """
     hdu = fits.open(fitscube)
     hduflat = flatten(hdu)
-    w = WCS(hduflat.header)
     r = pyregion.open(ds9_regionfile)
     manualmask = r.get_mask(hdu=hduflat)
 
@@ -117,9 +120,7 @@ def plot_RMclean_spectrum(region_files: list[str],
     linestyles = ['dashed', 'dotted', '-']
 
     for i in range(len(region_files)):
-        print(i)
         region_file = region_files[i]
-        print(region_file)
         rm_spectra, rm_axis = extract_rm_spectrum(FDF_clean_tot, region_file)
 
         # Subtract median and convert to mJy
@@ -129,10 +130,10 @@ def plot_RMclean_spectrum(region_files: list[str],
         print(f"RM peak --> {region_file.replace('.reg', '').replace('_', ' ').title()}: {rm_axis[np.argmax(flux)]}")
 
     plt.xlim(-30, 30)
-    plt.xlabel('Faraday depth (rad m$^{-2}$)', fontsize=12)
-    plt.ylabel('FDF (mJy  RMSF$^{-1}$)', fontsize=12)
+    plt.xlabel('Faraday depth (rad m$^{-2}$)')
+    plt.ylabel('FDF (mJy  RMSF$^{-1}$)')
     if len(region_files) > 1:
-        plt.legend(fontsize=12)
+        plt.legend()
         plt.legend(legend)
     plt.savefig(output_file, dpi=150, bbox_inches='tight')
     plt.close()

@@ -45,6 +45,7 @@ def clipped_median(data, sigma_clip=3.0, max_iter=5):
 def get_nbeams_region(filename: str = None, ds9region: str = None):
     """
     Get number of beams in region file
+
     Args:
         filename: Input file name
         ds9region: ds9 region file
@@ -70,6 +71,7 @@ def get_nbeams_region(filename: str = None, ds9region: str = None):
 def get_lambda2(fitsfiles):
     """
     Get lambda^2 from input FITS files
+
     Args:
         fitsfiles: FITS files from channel images
 

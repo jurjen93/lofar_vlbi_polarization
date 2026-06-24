@@ -26,8 +26,8 @@ plt.rcParams.update({
 
 def phase_rot(ms_in: str = None, h5_out: str = None, intercept: float = None, rm: float = None):
     """
-    Make template h5 with default values (phase=0 and amplitude=1) and convert to phase rotate matrix
-    for polarization alignment between different observations.
+    Make h5parm for phase corrections to align linear polarisation.
+
     Args:
         h5_in: Input h5parm
         h5_out: Output h5parm
@@ -123,7 +123,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     x0_QU_depol = np.array([p0, rm_init, chi0_init, 0.03])
 
-    rm_window = 5.0  # rad/m^2 — widen if needed
+    rm_window = 5.0  # rad/m^2
     bounds_lo = [0,       rm_init - rm_window, -np.pi, 0.0]
     bounds_hi = [np.inf,  rm_init + rm_window,  np.pi, 10.0]
 
@@ -143,15 +143,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     if fitQU_depol[0] <= 0:
         sys.exit("WARNING: negative polarization fraction - fitting may be unstable")
-
-    fitstr = (
-        f"fit: RM={fitQU_depol[1]:.3f} +/- {err[1]:.3f} rad m^-2; "
-        f"chi0={fitQU_depol[2]:.3f} +/- {err[2]:.3f} rad; "
-    )
-
-    print(fitstr)
-
-    ##### PLOTTING #####
 
     lam2 = lambda2
     pol_model = Imodel * fitQU_depol[0] * np.exp(-2 * fitQU_depol[3] * lam2 ** 2)
@@ -224,12 +215,19 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     ####################
 
+    fitstr = (
+        f"fit: RM={fitQU_depol[1]:.3f} +/- {err[1]:.3f} rad m^-2; "
+        f"chi0={fitQU_depol[2]:.3f} +/- {err[2]:.3f} rad; "
+    )
+
+    print(fitstr)
+
     return fitQU_depol[1], fitQU_depol[2], lambdaref2
 
 
 def get_phase_rot(RM, chi0, input_ms=None, ref_RM=None, ref_chi0=None, lambdaref2=4.5):
     """
-    Get polarization phase rotation solution file.
+    Get polarization phase rotation h5parm.
 
     Args
     ----------
@@ -269,12 +267,15 @@ def get_phase_rot(RM, chi0, input_ms=None, ref_RM=None, ref_chi0=None, lambdaref
 def parse_args():
     """Argument parser"""
 
-    parser = ArgumentParser(description='Perform polarisation alignment for deep observations')
+    parser = ArgumentParser(description='Calculate RM and chi0 (polarisation intercept) and create h5parm with phase corrections'
+                                        ' to align observations for deep linear polarisation imaging')
+
+    # Calculate RM and chi0
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region', help='DS9 region file on linear polarised signal', type=str, required=True)
 
-    # For getting alignment h5parm
+    # Create alignment h5parm
     parser.add_argument('--msin', help='Input MeasurementSet with the desired time and frequency axis', type=str)
     parser.add_argument('--ref_RM', help='Reference RM for alignment', type=float)
     parser.add_argument('--ref_chi0', help='Reference intercept for polarisation angle', type=float)
