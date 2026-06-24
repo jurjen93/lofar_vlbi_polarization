@@ -79,7 +79,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     lambdaref2 = np.median(lambda2)
     freqref = np.median(freqvec)
 
-    print(f"lambdaref2 = {lambdaref2:.4f} m^2")
+    print(f"lambda^2 reference = {lambdaref2:.4f} m^2")
 
     # Fit Stokes I
     fitI, pcov_I = scipy.optimize.curve_fit(
@@ -147,8 +147,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     fitstr = (
         f"fit: RM={fitQU_depol[1]:.3f} +/- {err[1]:.3f} rad m^-2; "
         f"chi0={fitQU_depol[2]:.3f} +/- {err[2]:.3f} rad; "
-        f"sigmaRM2={fitQU_depol[3]:.3f} +/- {err[3]:.3f} rad^2 m^-4; "
-        f"p0={fitQU_depol[0]:.3f} +/- {err[0]:.3f}"
     )
 
     print(fitstr)
@@ -165,7 +163,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # --- Plot Stokes I, Q, U ---
     panels = [
-        ("Stokes I", Iflux, sigma_I, function_synch_simple(freqvec_MHz, *fitI, freq_ref=150.)),
+        ("Stokes I", Iflux, sigma_I, function_synch_simple(freqvec_MHz, *fitI, freq_ref=freqref/1e6)),
         ("Stokes Q", Qflux, sigma_Q, Qmodel),
         ("Stokes U", Uflux, sigma_U, Umodel),
     ]
