@@ -173,7 +173,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     Qmodel = pol_model * np.cos(phase)
     Umodel = pol_model * np.sin(phase)
 
-    ##### PLOTTING #####
+    ##### INSPECTION PLOTS #####
 
     # --- Plot Stokes I, Q, U ---
     panels = [
@@ -197,20 +197,20 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # --- Plot Polarization Angle ---
     sort_lam = np.argsort(lambda2)
-    lam2_s = np.linspace(lambda2.min(), lambda2.max(), 100)
     polangle = 0.5 * np.arctan2(Uflux[sort_lam], Qflux[sort_lam])
     polangle_sigma = 0.5 * np.sqrt(
         (sigma_U[sort_lam] ** 2 * Qflux[sort_lam] ** 2 +
          sigma_Q[sort_lam] ** 2 * Uflux[sort_lam] ** 2)
         / (Uflux[sort_lam] ** 2 + Qflux[sort_lam] ** 2) ** 2
     )
-    polangle_model = fitQU_depol[1]*sort_lam + fitQU_depol[2]
+
+    lam2_s = np.linspace(lambda2.min(), lambda2.max(), 500)
+    polangle_model = fitQU_depol[1]*lam2_s + fitQU_depol[2]
 
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.errorbar(lambda2[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
                 linestyle="", marker="o", color='black', label='Data')
-    ax.plot(lam2_s, polangle_model,
-            color='darkred', linestyle='--', label='Model')
+    ax.plot(lam2_s, polangle_model, color='darkred', linestyle='--', label='Model')
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
     ax.set_ylabel('Polarisation angle [rad]')
     ax.legend()
@@ -218,24 +218,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     plt.tight_layout()
     plt.savefig("polangle.png", dpi=150)
     plt.close()
-
-    # --- Plot Polarization Percentage ---
-    # P_plot = (Qflux + 1j * Uflux) / Iflux
-    # P_amp = np.abs(P_plot)
-    # sigma_P = np.sqrt((sigma_Q ** 2 + sigma_U ** 2) / Iflux ** 2)
-    #
-    # fig, ax = plt.subplots(figsize=(12, 7))
-    # ax.errorbar(freqvec_MHz, 100 * P_amp, yerr=100 * sigma_P,
-    #             linestyle="", marker="s", color='black', label='Polarisation fraction')
-    # ax.plot(freqvec_MHz,
-    #         100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel,
-    #         color='darkred', linestyle='--', label='Model')
-    # ax.set_xlabel('Frequency [MHz]')
-    # ax.set_ylabel('Polarisation percentage [%]')
-    # ax.legend()
-    # plt.tight_layout()
-    # plt.savefig("polfrac.png", dpi=150)
-    # plt.close()
 
     ####################
 
