@@ -63,7 +63,6 @@ def get_nbeams_region(filename: str = None, ds9region: str = None):
         image[np.where(manualmask == False)] = 0.0
         image[np.where(manualmask == True)] = 1.0
         n_beam = np.sum(image) / ((header['BMAJ'] / header['CDELT2']) * (header['BMIN'] / header['CDELT2']) * np.pi / 4.)
-        print('n_beam', n_beam)
         return n_beam
 
 

@@ -44,19 +44,6 @@ def extract_rm_spectrum(fitscube, ds9_regionfile):
     rm_axis : numpy.ndarray
         Faraday depth axis (rad m^-2) corresponding to the extracted
         RM spectrum.
-
-    Notes
-    -----
-    - The FITS cube is assumed to contain beam information in the
-      ``BMAJ`` and ``BMIN`` header keywords and pixel scales in
-      ``CDELT1`` and ``CDELT2``.
-    - The RM axis is constructed from the FITS header keywords
-      ``CRVAL3``, ``CRPIX3``, ``CDELT3``, and ``NAXIS3``.
-    - The spectrum is obtained by summing all pixels in the masked
-      region without any weighting.
-    - Diagnostic information, including the Jy/beam-to-Jy/pixel
-      conversion factor and the number of pixels included in the
-      extraction, is printed to stdout.
     """
     hdu = fits.open(fitscube)
     hduflat = flatten(hdu)
@@ -71,7 +58,7 @@ def extract_rm_spectrum(fitscube, ds9_regionfile):
     beam_area = (np.pi * bmaj * bmin) / (4 * np.log(2))  # in deg^2
     pixel_area = pixscale_x * pixscale_y  # in deg^2
     conversion_factor = pixel_area / beam_area
-    hdu[0].data *= conversion_factor  # now in Jy per pixel
+    hdu[0].data *= conversion_factor  # in Jy per pixel
     print(conversion_factor)
     # Get the pixel coordinates of the masked region
     y_indices, x_indices = np.where(manualmask)
@@ -81,7 +68,6 @@ def extract_rm_spectrum(fitscube, ds9_regionfile):
 
     rm_spectra_I = np.zeros(hdu[0].data.shape[1])
     count = 0
-    # Extract the RM spectrum for each pixel in the masked region
 
     for y, x in zip(y_indices, x_indices):
         # count how many pixels are being added
@@ -89,7 +75,6 @@ def extract_rm_spectrum(fitscube, ds9_regionfile):
         rm_spectrum_I = hdu[0].data[0, :, y, x]
         rm_spectra_I = rm_spectra_I + rm_spectrum_I
 
-    print(f"Total number of pixels added: {count}")
     # create RM-axis from FITS header
     delta_RM = hdu[0].header['CDELT3']
     ref_RM = hdu[0].header['CRVAL3']
@@ -114,10 +99,11 @@ def plot_RMclean_spectrum(region_files: list[str],
     output_file : str
         Output PDF filename.
     """
+
     plt.figure(figsize=(6, 4))
     legend = []
-    colors = ['darkgreen', 'darkred', 'darkblue']
-    linestyles = ['dashed', 'dotted', '-']
+    colors = ['darkgreen', 'darkred', 'darkblue','orange','gray']
+    linestyles = ['dashed', 'dotted', '-','-.','--']
 
     for i in range(len(region_files)):
         region_file = region_files[i]
@@ -129,7 +115,7 @@ def plot_RMclean_spectrum(region_files: list[str],
         legend.append(region_file.replace('.reg', '').replace("_", " ").title())
         print(f"RM peak --> {region_file.replace('.reg', '').replace('_', ' ').title()}: {rm_axis[np.argmax(flux)]}")
 
-    plt.xlim(-30, 30)
+    plt.xlim(min(rm_axis), max(rm_axis))
     plt.xlabel('Faraday depth (rad m$^{-2}$)')
     plt.ylabel('FDF (mJy  RMSF$^{-1}$)')
     if len(region_files) > 1:
@@ -142,9 +128,9 @@ def plot_RMclean_spectrum(region_files: list[str],
 def parse_args():
     """Argument parser"""
 
-    parser = ArgumentParser(description='Perform RMS synthesis')
+    parser = ArgumentParser(description='Make RM clean spectrum')
     parser.add_argument('--rm_clean_fits', help='RM-synthesis total clean FITS file', type=str, required=True)
-    parser.add_argument('--region', help='DS9 region file', nargs='+')
+    parser.add_argument('--region', help='DS9 region file (up to 5 region files at once)', nargs='+')
     parser.add_argument('--spectrum_png_name', help='PNG name for output spectrum', type=str, default='RMclean_spectrum.png')
     return parser.parse_args()
 
@@ -153,7 +139,7 @@ def main():
     args = parse_args()
 
     if args.region is None:
-        region_files = glob("*.reg")
+        region_files = glob("*.reg")[0:5]
     else:
         region_files = args.region
 

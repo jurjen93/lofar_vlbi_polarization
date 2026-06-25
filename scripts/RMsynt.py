@@ -13,7 +13,6 @@ def do_RMsynt(i_images: list = None,
               q_images: list = None,
               u_images: list = None,
               output_prefix: str = 'RMsynth',
-              output_directory: str = './',
               dphi: float = None,
               phi_max: float = None,
               clean_threshold: float = None,
@@ -25,7 +24,6 @@ def do_RMsynt(i_images: list = None,
         q_images: Stokes Q fits images
         u_images: Stokes U fits images
         output_prefix: Output prefix
-        output_directory: Output directory
         dphi: delta phi
         phi_max: phi max
         clean_threshold: cleaning threshold in Jy/beam
@@ -74,7 +72,7 @@ def do_RMsynt(i_images: list = None,
               headtemplate=q_header,
               fitRMSF=False,
               prefixOut=output_prefix,
-              outDir=output_directory,
+              outDir='./',
               write_seperate_FDF=True,
               not_rmsf=False,
               nBits=32,
@@ -101,7 +99,7 @@ def do_RMsynt(i_images: list = None,
              resid_fdf,
              header,
              prefixOut=output_prefix,
-             outDir=output_directory,
+             outDir='./',
              write_separate_FDF=True,
              nBits=32,
              verbose=False)
@@ -112,7 +110,6 @@ def parse_args():
 
     parser = ArgumentParser(description='Perform RMS synthesis')
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
-    parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--dphi', help='Delta phi', type=float, default=0.3)
     parser.add_argument('--phi_max', help='Phi maximum', type=float, default=60.)
     parser.add_argument('--prefix', help='Output prefix', type=str, default="RMsynth")
@@ -134,7 +131,6 @@ def main():
               q_fits,
               u_fits,
               args.prefix,
-              args.output_directory,
               args.dphi,
               args.phi_max,
               args.clean_threshold,
