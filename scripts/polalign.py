@@ -168,9 +168,8 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     if fitQU_depol[0] <= 0:
         sys.exit("WARNING: negative polarization fraction - fitting may be unstable")
 
-    lam2 = lambda2
-    pol_model = Imodel * fitQU_depol[0] * np.exp(-2 * fitQU_depol[3] * lam2 ** 2)
-    phase = 2 * (fitQU_depol[1] * (lam2 - lambdaref2) + fitQU_depol[2])
+    pol_model = Imodel * fitQU_depol[0] * np.exp(-2 * fitQU_depol[3] * lambda2 ** 2)
+    phase = 2 * (fitQU_depol[1] * (lambda2 - lambdaref2) + fitQU_depol[2])
     Qmodel = pol_model * np.cos(phase)
     Umodel = pol_model * np.sin(phase)
 
@@ -185,9 +184,9 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     fig, axes = plt.subplots(3, 1, figsize=(12, 11.25))
     for ax, (title, flux, sigma, model) in zip(axes, panels):
-        ax.errorbar(lam2, flux, yerr=sigma, linestyle="", marker="s",
+        ax.errorbar(lambda2, flux, yerr=sigma, linestyle="", marker="s",
                     color='black', markersize=5)
-        ax.plot(lam2, model, color='darkred', linestyle='--', label=f'{title} fit')
+        ax.plot(lambda2, model, color='darkred', linestyle='--', label=f'{title} fit')
         ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
         ax.set_ylabel('Flux [Jy]')
         ax.set_title(title)
@@ -197,8 +196,8 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     plt.close()
 
     # --- Plot Polarization Angle ---
-    sort_lam = np.argsort(lam2)
-    lam2_s = np.linspace(lam2.min(), lam2.max(), 100)
+    sort_lam = np.argsort(lambda2)
+    lam2_s = np.linspace(lambda2.min(), lambda2.max(), 100)
     polangle = 0.5 * np.arctan2(Uflux[sort_lam], Qflux[sort_lam])
     polangle_sigma = 0.5 * np.sqrt(
         (sigma_U[sort_lam] ** 2 * Qflux[sort_lam] ** 2 +
@@ -208,7 +207,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     polangle_model = fitQU_depol[1]*sort_lam + fitQU_depol[2]
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    ax.errorbar(lam2_s[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
+    ax.errorbar(lambda2[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
                 linestyle="", marker="o", color='black', label='Data')
     ax.plot(lam2_s, polangle_model,
             color='darkred', linestyle='--', label='Model')
