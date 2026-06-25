@@ -97,6 +97,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     idx_incl = np.where(chisq <= 2.5 * np.std(chisq))
     freqvec = freqvec[idx_incl]
     freqvec_MHz = freqvec_MHz[idx_incl]
+    lambda2 = lambda2[idx_incl]
     Iflux = Iflux[idx_incl]
     Qflux = Qflux[idx_incl]
     Uflux = Uflux[idx_incl]
