@@ -105,7 +105,14 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     sigma_U = sigma_U[idx_incl]
 
     # Fit Stokes I again with clean data
-    fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
+    fitI, pcov_I = scipy.optimize.curve_fit(
+        lambda freq, norm, alpha: function_synch_simple(freq, norm, alpha, freq_ref=freqref),
+        freqvec,
+        Iflux,
+        p0=x0_I,
+        sigma=sigma_I,
+        maxfev=100000
+    )
     Imodel = function_synch_simple(freqvec, *fitI, freq_ref=freqref)
 
     # Fractional polarisation
