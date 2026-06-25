@@ -128,7 +128,7 @@ def plot_RMclean_spectrum(region_files: list[str],
 def parse_args():
     """Argument parser"""
 
-    parser = ArgumentParser(description='Make RM clean spectrum')
+    parser = ArgumentParser(description='Make RM clean spectrum from RM-synthesis and RM-clean output.')
     parser.add_argument('--rm_clean_fits', help='RM-synthesis total clean FITS file', type=str, required=True)
     parser.add_argument('--region', help='DS9 region file (up to 5 region files at once)', nargs='+')
     parser.add_argument('--spectrum_png_name', help='PNG name for output spectrum', type=str, default='RMclean_spectrum.png')

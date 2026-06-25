@@ -36,7 +36,7 @@ def do_RMsynt(i_images: list = None,
     freq_array = make_freq_vec(u_images)
 
     # Make image cubes
-    i_data = None # Something to improve?
+    i_data = i_images # TODO: Add I-model?
     u_data, rms_u = make_image_cube(sorted(u_images), return_noise=True)
     q_data, rms_q = make_image_cube(sorted(q_images), return_noise=True)
 
@@ -83,7 +83,7 @@ def do_RMsynt(i_images: list = None,
             output_prefix + 'FDF_tot_dirty.fits',
             output_prefix + 'RMSF_tot.fits',
             clean_threshold,
-            gain=0.08,
+            gain=0.1,
             maxIter=3000,
             nBits=32,
             pool=pool,
@@ -108,7 +108,7 @@ def do_RMsynt(i_images: list = None,
 def parse_args():
     """Argument parser"""
 
-    parser = ArgumentParser(description='Perform RMS synthesis')
+    parser = ArgumentParser(description='Perform RM synthesis and cleaning.')
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
     parser.add_argument('--dphi', help='Delta phi', type=float, default=0.3)
     parser.add_argument('--phi_max', help='Phi maximum', type=float, default=60.)
@@ -122,12 +122,12 @@ def main():
     args = parse_args()
 
     # Get input images
-    # i_fits = glob(args.input_directory+"/*-0???-I-model.fits")
+    i_fits = None #glob(args.input_directory+"/*-0???-I-model.fits")
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
     # Perform RM synthesis
-    do_RMsynt(None,
+    do_RMsynt(i_fits,
               q_fits,
               u_fits,
               args.prefix,

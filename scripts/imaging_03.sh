@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Input MS
-MS=$1
+MS=$(realpath $1)
+
+CHANNELS=$(taql "SELECT NUM_CHAN FROM ${MS}/SPECTRAL_WINDOW" | tail -1)
+echo "Number of channels ${CHANNELS}"
 
 # Stokes IV imaging
 wsclean \
@@ -9,11 +12,11 @@ wsclean \
 -minuv-l 80.0 \
 -size 1024 1024 \
 -reorder \
--weight briggs -0.3 \
+-weight briggs -0.5 \
 -parallel-reordering 6 \
 -mgain 0.7 \
 -data-column DATA \
--channels-out 250 \
+-channels-out ${CHANNELS} \
 -parallel-deconvolution 1024 \
 -parallel-gridding 6 \
 -auto-mask 2.5 \
@@ -33,7 +36,7 @@ wsclean \
 -taper-gaussian 0.25asec \
 ${MS}
 
-breizorro --make-binary --fill-holes --threshold=3 --restored-image=0.3arcsec-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
+breizorro --make-binary --fill-holes --threshold=2 --restored-image=0.3arcsec-MFS-I-image.fits --boxsize=30 --outfile=pol.mask.fits
 
 # Stokes QU imaging
 wsclean \
@@ -45,7 +48,7 @@ wsclean \
 -parallel-reordering 6 \
 -mgain 0.6 \
 -data-column DATA \
--channels-out 250 \
+-channels-out ${CHANNELS} \
 -parallel-deconvolution 1024 \
 -parallel-gridding 6 \
 -auto-mask 2.5 \

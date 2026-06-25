@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Input MS
-MS=$1
+MS=$(realpath $1)
+
+CHANNELS=$(taql "SELECT NUM_CHAN FROM ${MS}/SPECTRAL_WINDOW" | tail -1)
+echo "Number of channels ${CHANNELS}"
 
 # Stokes IV imaging
 wsclean \
@@ -9,11 +12,11 @@ wsclean \
 -minuv-l 80.0 \
 -size 256 256 \
 -reorder \
--weight briggs 0.2 \
+-weight briggs -0.5 \
 -parallel-reordering 4 \
 -mgain 0.6 \
 -data-column DATA \
--channels-out 250 \
+-channels-out ${CHANNELS} \
 -parallel-deconvolution 1024 \
 -parallel-gridding 4 \
 -auto-mask 2.5 \
@@ -45,7 +48,7 @@ wsclean \
 -parallel-reordering 4 \
 -mgain 0.6 \
 -data-column DATA \
--channels-out 250 \
+-channels-out ${CHANNELS} \
 -parallel-deconvolution 1024 \
 -parallel-gridding 4 \
 -auto-mask 2.5 \

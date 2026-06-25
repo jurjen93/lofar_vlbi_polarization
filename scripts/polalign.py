@@ -277,7 +277,6 @@ def parse_args():
 
     # Calculate RM and chi0
     parser.add_argument('--input_directory', help='Directory with Stokes Q and U images', type=str, default='./')
-    parser.add_argument('--output_directory', help='Output image directory', type=str, default='./')
     parser.add_argument('--region', help='DS9 region file on linear polarised signal', type=str, required=True)
 
     # Create alignment h5parm

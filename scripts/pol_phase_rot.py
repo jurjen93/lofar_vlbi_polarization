@@ -30,7 +30,7 @@ class PhaseRotate:
         else:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             parent_dir = os.path.dirname(current_dir)
-            source_file = os.path.join(parent_dir, "tmpdata/tmp.h5")
+            source_file = os.path.join(parent_dir, "scripts/tmpdata/tmp.h5")
             copy(source_file, h5_out)
 
         self.h5 = tables.open_file(h5_out, 'r+')
@@ -220,7 +220,7 @@ def parse_args():
 
     :return: parsed arguments
     """
-    parser = ArgumentParser()
+    parser = ArgumentParser("Generate h5parm for polarization alignment between different observations.")
     parser.add_argument('--h5_in', type=str, help='Input h5 (from which to extract the frequencies and antennas). Instead of --msin_in.')
     parser.add_argument('--ms_in', type=str, help='Input MS (from which to extract the frequencies and antennas). Instead of --h5_in.')
     parser.add_argument('--h5_out', type=str, help='Output name (output solution file)', required=True)
