@@ -197,13 +197,12 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     # --- Plot Polarization Angle ---
     sort_lam = np.argsort(lambda2)
     polangle = 0.5 * np.arctan2(Uflux[sort_lam], Qflux[sort_lam])
+    polangle_model = 0.5 * np.arctan2(Umodel, Qmodel)
     polangle_sigma = 0.5 * np.sqrt(
         (sigma_U[sort_lam] ** 2 * Qflux[sort_lam] ** 2 +
          sigma_Q[sort_lam] ** 2 * Uflux[sort_lam] ** 2)
         / (Uflux[sort_lam] ** 2 + Qflux[sort_lam] ** 2) ** 2
     )
-
-    polangle_model = 0.5 * np.arctan2(Qmodel, Umodel)
 
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.errorbar(lambda2[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
