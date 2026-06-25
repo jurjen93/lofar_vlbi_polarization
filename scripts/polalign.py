@@ -196,23 +196,24 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # --- Plot Polarization Angle ---
     sort_lam = np.argsort(lambda2)
-    lambda2s = lambda2[sort_lam]
     polangle = 0.5 * np.arctan2(Uflux[sort_lam], Qflux[sort_lam])
-    polangle_model = 0.5 * np.arctan2(Umodel[sort_lam], Qmodel[sort_lam])
     polangle_sigma = 0.5 * np.sqrt(
         (sigma_U[sort_lam] ** 2 * Qflux[sort_lam] ** 2 +
          sigma_Q[sort_lam] ** 2 * Uflux[sort_lam] ** 2)
         / (Uflux[sort_lam] ** 2 + Qflux[sort_lam] ** 2) ** 2
     )
 
+    lam2_s = np.linspace(lambda2.min(), lambda2.max(), 5000)
+    polangle_model = fitQU_depol[1]*lam2_s + fitQU_depol[2]
+
     fig, ax = plt.subplots(figsize=(12, 7))
-    ax.errorbar(lambda2s[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
+    ax.errorbar(lambda2[sort_lam][polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
                 linestyle="", marker="o", color='black', label='Data')
-    ax.plot(lambda2s, polangle_model, color='darkred', linestyle='--', label='Model')
+    ax.plot(lam2_s, polangle_model, color='darkred', linestyle='--', label='Model')
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
     ax.set_ylabel('Polarisation angle [rad]')
     ax.legend()
-    plt.ylim(-2, 2)
+    plt.ylim(-(np.pi/2+0.3), np.pi/2+0.3)
     plt.tight_layout()
     plt.savefig("polangle.png", dpi=150)
     plt.close()
