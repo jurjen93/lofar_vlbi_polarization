@@ -93,7 +93,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     )
 
     # Filter
-    chisq = (Iflux - function_synch_simple(freqvec, fitI[0], fitI[1])) ** 2 / sigma_I ** 2
+    chisq = (Iflux - function_synch_simple(freqvec, *fitI, freq_ref=freqref)) ** 2 / sigma_I ** 2
     idx_incl = np.where(chisq <= 2.5 * np.std(chisq))
     freqvec = freqvec[idx_incl]
     freqvec_MHz = freqvec_MHz[idx_incl]
