@@ -213,7 +213,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
     ax.set_ylabel('Polarisation angle [rad]')
     ax.legend()
-    plt.ylim(-(np.pi/2+0.3), np.pi/2+0.3)
+    plt.ylim(-2, 2)
     plt.tight_layout()
     plt.savefig("polangle.png", dpi=150)
     plt.close()
