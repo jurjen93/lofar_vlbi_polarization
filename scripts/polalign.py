@@ -96,7 +96,6 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     chisq = (Iflux - function_synch_simple(freqvec, *fitI, freq_ref=freqref)) ** 2 / sigma_I ** 2
     idx_incl = np.where(chisq <= 2.5 * np.std(chisq))
     freqvec = freqvec[idx_incl]
-    freqvec_MHz = freqvec_MHz[idx_incl]
     lambda2 = lambda2[idx_incl]
     Iflux = Iflux[idx_incl]
     Qflux = Qflux[idx_incl]
@@ -206,6 +205,9 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     lam2_s = np.linspace(lambda2.min(), lambda2.max(), 500)
     polangle_model = fitQU_depol[1]*lam2_s + fitQU_depol[2]
+    polangle_model = (polangle_model + np.pi) % (2 * np.pi) - np.pi
+
+    print(polangle_model)
 
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.errorbar(lambda2[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
@@ -214,7 +216,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
     ax.set_ylabel('Polarisation angle [rad]')
     ax.legend()
-    plt.ylim(-(np.pi/2+0.1), np.pi/2+0.1)
+    plt.ylim(-(np.pi/2+0.3), np.pi/2+0.3)
     plt.tight_layout()
     plt.savefig("polangle.png", dpi=150)
     plt.close()
