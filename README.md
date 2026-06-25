@@ -8,7 +8,7 @@ This can only be done with data that has been corrected for scalar-phasediff (RR
 The following steps can be used for linear polarisation alignment on a known high S/N linearly polarised source:
 1) Run `source scripts/imaging_03.sh <MS_SOURCE>` \
 This step makes with [WSClean](https://wsclean.readthedocs.io/) a small postage stamp image on your linearly polarised target source. Run this on all datasets from all observations individually. Note: the input is expected to have a phased-up Dutch core (with station ST001).
-2) Run `python scripts/RMsynt.py <OPTIONAL_PARAMS>`
+2) Run `python scripts/RMsynt.py <OPTIONAL_PARAMS>` \
 This step runs RM synthesis with the obtained Q and U images (step 1).
 3) Inspect the `RMsynthFDF_maxPI.fits` output image to find a bright polarised region and draw a DS9 region file around this area.
 4) Run `python scripts/polalign.py --region <DS9_regionfile> <OTHER_OPTIONAL_PARAMS>` \
@@ -18,7 +18,7 @@ This step should be run on the datasets from the other observations, using the r
 This gives you an h5parm with the desired phase corrections that can be applied on the datasets from this observation.
 6) Finally, applying the solutions on the data can for example be done with [lofar_helpers](https://github.com/jurjen93/lofar_helpers) or directly with [DP3](https://dp3.readthedocs.io/).
 
-Optionally:
+Optional additional steps:
 1) After having aligned the datasets from the observations, you can use [Sidereal Visibility Averaging](https://github.com/jurjen93/sidereal_visibility_avg) to obtain a smaller dataset with visibilities from all observations combined.
 2) Run `python scripts/RMsynth.py` with the `--do_rmclean` option to also perform RM cleaning and to make a spectrum with `scripts/plot_RMclean_spectrum.py` with the region file from the linearly polarised areas.
 
