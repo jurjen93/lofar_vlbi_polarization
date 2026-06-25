@@ -205,9 +205,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     lam2_s = np.linspace(lambda2.min(), lambda2.max(), 500)
     polangle_model = fitQU_depol[1]*lam2_s + fitQU_depol[2]
-    polangle_model = (polangle_model + np.pi) % (2 * np.pi) - np.pi
-
-    print(polangle_model)
+    polangle_model = (polangle_model + np.pi/2) % np.pi - np.pi/2
 
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.errorbar(lambda2[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
