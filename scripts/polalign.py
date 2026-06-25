@@ -178,7 +178,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # --- Plot Stokes I, Q, U ---
     panels = [
-        ("Stokes I", Iflux, sigma_I, function_synch_simple(freqvec_MHz, *fitI, freq_ref=freqref/1e6)),
+        ("Stokes I", Iflux, sigma_I, Imodel),
         ("Stokes Q", Qflux, sigma_Q, Qmodel),
         ("Stokes U", Uflux, sigma_U, Umodel),
     ]
@@ -198,44 +198,45 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     # --- Plot Polarization Angle ---
     sort_lam = np.argsort(lam2)
-    lam2_s = lam2[sort_lam]
+    lam2_s = np.linspace(lam2.min(), lam2.max(), 100)
     polangle = 0.5 * np.arctan2(Uflux[sort_lam], Qflux[sort_lam])
     polangle_sigma = 0.5 * np.sqrt(
         (sigma_U[sort_lam] ** 2 * Qflux[sort_lam] ** 2 +
          sigma_Q[sort_lam] ** 2 * Uflux[sort_lam] ** 2)
         / (Uflux[sort_lam] ** 2 + Qflux[sort_lam] ** 2) ** 2
     )
-    polangle_model = 0.5 * np.arctan2(Umodel[sort_lam], Qmodel[sort_lam])
+    polangle_model = fitQU_depol[1]*sort_lam + fitQU_depol[2]
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    ax.errorbar(lam2_s, polangle, yerr=polangle_sigma,
+    ax.errorbar(lam2_s[polangle_sigma<1], polangle[polangle_sigma<1], yerr=polangle_sigma[polangle_sigma<1],
                 linestyle="", marker="o", color='black', label='Data')
     ax.plot(lam2_s, polangle_model,
             color='darkred', linestyle='--', label='Model')
     ax.set_xlabel(r'$\lambda^2$ [m$^2$]')
     ax.set_ylabel('Polarisation angle [rad]')
     ax.legend()
+    plt.ylim(-(np.pi/2+0.1), np.pi/2+0.1)
     plt.tight_layout()
     plt.savefig("polangle.png", dpi=150)
     plt.close()
 
     # --- Plot Polarization Percentage ---
-    P_plot = (Qflux + 1j * Uflux) / Iflux
-    P_amp = np.abs(P_plot)
-    sigma_P = np.sqrt((sigma_Q ** 2 + sigma_U ** 2) / Iflux ** 2)
-
-    fig, ax = plt.subplots(figsize=(12, 7))
-    ax.errorbar(freqvec_MHz, 100 * P_amp, yerr=100 * sigma_P,
-                linestyle="", marker="s", color='black', label='Polarisation fraction')
-    ax.plot(freqvec_MHz,
-            100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel,
-            color='darkred', linestyle='--', label='Model')
-    ax.set_xlabel('Frequency [MHz]')
-    ax.set_ylabel('Polarisation percentage [%]')
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig("polfrac.png", dpi=150)
-    plt.close()
+    # P_plot = (Qflux + 1j * Uflux) / Iflux
+    # P_amp = np.abs(P_plot)
+    # sigma_P = np.sqrt((sigma_Q ** 2 + sigma_U ** 2) / Iflux ** 2)
+    #
+    # fig, ax = plt.subplots(figsize=(12, 7))
+    # ax.errorbar(freqvec_MHz, 100 * P_amp, yerr=100 * sigma_P,
+    #             linestyle="", marker="s", color='black', label='Polarisation fraction')
+    # ax.plot(freqvec_MHz,
+    #         100 * np.sqrt(Umodel ** 2 + Qmodel ** 2) / Imodel,
+    #         color='darkred', linestyle='--', label='Model')
+    # ax.set_xlabel('Frequency [MHz]')
+    # ax.set_ylabel('Polarisation percentage [%]')
+    # ax.legend()
+    # plt.tight_layout()
+    # plt.savefig("polfrac.png", dpi=150)
+    # plt.close()
 
     ####################
 
@@ -246,7 +247,7 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
 
     print(fitstr)
 
-    return fitQU_depol[1], fitQU_depol[2], lambdaref2
+    return fitQU_depol[1], fitQU_depol[2], lambdaref2, err[1], err[2]
 
 
 def get_phase_rot(RM, chi0, input_ms=None, ref_RM=None, ref_chi0=None, lambdaref2=4.5):
@@ -315,11 +316,11 @@ def main():
     u_fits = glob(args.input_directory+"/*-0???-U-image.fits")
     q_fits = glob(args.input_directory+"/*-0???-Q-image.fits")
 
-    RM, chi0, lambdaref2 = fit_RM(i_fits, u_fits, q_fits, args.region)
+    RM, chi0, lambdaref2, err_RM, err_chi0 = fit_RM(i_fits, u_fits, q_fits, args.region)
 
     json_filename = "rm_alignment.json"
     with open(json_filename, 'w') as file:
-        json.dump({"RM": RM, "chi0": chi0}, file, indent=4)
+        json.dump({"RM": RM, "chi0": chi0, "RM_err": err_RM, "err_chi0": err_chi0}, file, indent=4)
 
     if args.ref_RM is not None and args.ref_chi0 is not None and args.msin is not None:
         get_phase_rot(RM, chi0, args.msin, args.ref_RM, args.ref_chi0, lambdaref2)
