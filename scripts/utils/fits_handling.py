@@ -73,10 +73,8 @@ def make_image_cube(fits_files, return_noise=False):
 
     cube = np.zeros((len(fits_files), template.shape[0], template.shape[0]))  # freq axis first (RMtools wants this)
     noise_array = np.zeros((len(fits_files)))
-    print(cube.shape, noise_array.shape)
 
     for image_idx, image in enumerate(fits_files):
-        print(image)
         with fits.open(image) as hdul:
             cube[image_idx, :, :] = np.squeeze(hdul[0].data)
             if return_noise:
@@ -148,7 +146,6 @@ def make_noise_vec(fits_files):
     """
     noise_array = np.zeros((len(fits_files)))
     for image_idx, image in enumerate(fits_files):
-        print(image)
         hdul = fits.open(image)
         if np.isfinite(np.mean(np.squeeze(hdul[0].data))):
             noise_array[image_idx] = findrms(np.squeeze(hdul[0].data))
