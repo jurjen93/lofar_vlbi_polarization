@@ -82,14 +82,30 @@ def fit_RM(i_fits: list = None, u_fits: list = None, q_fits: list = None, region
     print(f"lambda^2 reference = {lambdaref2:.4f} m^2")
 
     # Fit Stokes I
+    x0_I = [np.nanmedian(Iflux), -0.7]
     fitI, pcov_I = scipy.optimize.curve_fit(
         lambda freq, norm, alpha: function_synch_simple(freq, norm, alpha, freq_ref=freqref),
         freqvec,
         Iflux,
-        p0=[np.nanmedian(Iflux), -0.7],
+        p0=x0_I,
         sigma=sigma_I,
         maxfev=100000
     )
+
+    # Filter
+    chisq = (Iflux - function_synch_simple(freqvec, fitI[0], fitI[1])) ** 2 / sigma_I ** 2
+    idx_incl = np.where(chisq <= 2.5 * np.std(chisq))
+    freqvec = freqvec[idx_incl]
+    freqvec_MHz = freqvec_MHz[idx_incl]
+    Iflux = Iflux[idx_incl]
+    Qflux = Qflux[idx_incl]
+    Uflux = Uflux[idx_incl]
+    sigma_I = sigma_I[idx_incl]
+    sigma_Q = sigma_Q[idx_incl]
+    sigma_U = sigma_U[idx_incl]
+
+    # Fit Stokes I again with clean data
+    fitI, pcov_I = scipy.optimize.curve_fit(function_synch_simple, freqvec, Iflux, p0=x0_I, sigma=sigma_I)
     Imodel = function_synch_simple(freqvec, *fitI, freq_ref=freqref)
 
     # Fractional polarisation
