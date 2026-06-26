@@ -44,7 +44,6 @@ class PhaseRotate:
             self.h5.root.sol000.source._f_remove()
             self.h5.create_table(self.h5.root.sol000, 'source', values, title='Source names and directions')
 
-
     def update_array(self, st, new_val, arrayname):
         """
         Update array
