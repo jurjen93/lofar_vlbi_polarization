@@ -41,6 +41,7 @@ class PhaseRotate:
         with table(ms_in+"::FIELD", ack=False) as ms:
             phasedir = list(ms.getcol("PHASE_DIR").squeeze())
             values = np.array((b'Dir00', phasedir), dtype=[('name', 'S128'), ('dir', '<f4', (2,))])
+            self.h5.root.sol000.source._f_remove()
             self.h5.create_table(self.h5.root.sol000, 'source', values, title='Source names and directions')
 
 
@@ -199,7 +200,7 @@ def parse_args():
     """
     parser = ArgumentParser("Generate h5parm for polarization alignment between different observations.")
     parser.add_argument('--ms_in', type=str, help='Input MS (from which to extract the frequencies and antennas).')
-    parser.add_argument('--h5_out', type=str, help='Output name (output solution file).', required=True)
+    parser.add_argument('--h5_out', type=str, help='Output name (output solution file).', default='polrot.h5')
     parser.add_argument('--intercept', type=float, help='Intercept for rotation angle.')
     parser.add_argument('--RM', type=float, help='Rotation measure.')
     return parser.parse_args()
