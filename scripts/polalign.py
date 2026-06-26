@@ -36,7 +36,7 @@ def phase_rot(ms_in: str = None, h5_out: str = None, intercept: float = None, rm
     """
 
     phaserot = PhaseRotate(ms_in=ms_in, h5_out=h5_out)
-    phaserot.make_template(polrot=True)
+    phaserot.make_template()
     phaserot.rotate(intercept=intercept, rotation_measure=rm)
     phaserot.h5.close()
 
