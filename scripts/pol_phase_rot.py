@@ -41,7 +41,6 @@ class PhaseRotate:
         with table(ms_in+"::FIELD", ack=False) as ms:
             phasedir = list(ms.getcol("PHASE_DIR").squeeze())
             values = np.array([(b'Dir00', phasedir)], dtype=[('name', 'S128'), ('dir', '<f4', (2,))])
-            print(values)
             self.h5.root.sol000.source._f_remove()
             self.h5.create_table(self.h5.root.sol000, 'source', values, title='Source names and directions')
 
